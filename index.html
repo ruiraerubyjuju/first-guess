@@ -249,7 +249,43 @@
   .tensions b { display: block; font-size: 15px; }
   .tensions div > span { display: block; font-size: 14px; color: var(--ink2); margin-top: 2px; }
 
-  @media (max-width: 1100px) {
+
+  /* ---- PRD polish: flat sections, one headline each, one tile style ---- */
+  main:has(#summary:not([hidden])) { max-width: 940px; }
+  #summary h2 { display: block; font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--coral-ink); margin: 64px 0 0; padding-top: 26px; border-top: 1px solid var(--line); }
+  #summary .lead + h2 { margin-top: 40px; }
+  .board { background: none; border: 0; border-radius: 0; padding: 0; margin-top: 10px; }
+  .big { font-size: 30px; line-height: 1.15; letter-spacing: -.015em; }
+  .board .goal { max-width: 640px; }
+  .lbl { margin: 30px 0 12px; }
+
+  .loop li, .sources div, .steps li, .persona, .hyp li, .prio li, .tensions div, .outs li, .rwhy {
+    background: var(--field); border: 1px solid var(--line); border-radius: 10px; }
+  .loop li { border-width: 1px; }
+  .loop li.hot, .steps li.res, .prio li.hot { background: var(--coral); border-color: var(--coral); }
+  .hyp li.t { background: var(--blueT); border-color: transparent; }
+  .outs li { border-radius: 6px; }
+
+  blockquote { background: none; color: var(--ink); border-radius: 0; padding: 0 0 0 22px; border-left: 3px solid var(--coral); font-size: 21px; margin-top: 28px; }
+
+  .qcol { background: none; border-radius: 0; padding: 0; }
+  .persona { border-top: 1px solid var(--line); }
+  .ptag { display: flex; align-items: center; gap: 6px; }
+  .ptag::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--pc); flex: none; }
+
+  .pyr .bar { min-height: 54px; display: flex; flex-direction: column; justify-content: center; }
+  .pyr { gap: 6px; }
+
+  .anat { grid-template-columns: minmax(0, 320px) minmax(0, 1fr); gap: 36px; }
+  .rwhy { background: var(--bg); border: 0; }
+  .callouts { gap: 12px; padding-top: 4px; }
+
+  .opp, .north { padding: 20px 22px; }
+  .qtypes { margin-top: 24px; }
+  .vlab .pin { flex: 0 0 18px; width: 18px; height: 18px; }
+  .rbtn .pin { background: var(--bg); color: var(--ink); }
+  .facts { border-top: 0; padding-top: 0; margin-top: 24px; }
+  @media (max-width: 900px) {
     .anat { grid-template-columns: 1fr; }
     .rcard { max-width: 340px; }
   }
@@ -420,7 +456,8 @@
 
     <h2>Two question types</h2>
     <div class="board">
-      <p class="goal" style="margin-top:0">Closed questions collect votes on options the asker already has. Open questions collect new ideas first, then votes on those ideas.</p>
+      <p class="big">Two ways to ask.</p>
+      <p class="goal">Closed questions collect votes on options the asker already has. Open questions collect new ideas first, then votes on those ideas.</p>
       <div class="qtypes">
         <div class="qcol">
           <div class="lbl">Closed-ended</div>
@@ -447,7 +484,8 @@
 
     <h2>Anatomy of a First Guess</h2>
     <div class="board">
-      <p class="goal" style="margin-top:0">The result screen is the product. It should show the decision first and keep the raw content out of the way.</p>
+      <p class="big">The result screen is the product.</p>
+      <p class="goal">Show the decision first and keep the raw content out of the way.</p>
       <div class="anat">
         <div class="rcard" aria-label="Example result card">
           <div class="rtag"><span class="pin">1</span>First Guess · <span class="pin">7</span><span class="pick">Community Pick</span></div>
@@ -474,7 +512,8 @@
 
     <h2>How money moves</h2>
     <div class="board">
-      <p class="goal" style="margin-top:0">Bounties come from the asker for one question. Answer Rewards come from the platform for consistent quality. They are separate systems.</p>
+      <p class="big">Two ways contributors get paid.</p>
+      <p class="goal">Bounties come from the asker for one question. Answer Rewards come from the platform for consistent quality. They are separate systems.</p>
       <div class="lbl">Bounty</div>
       <ol class="flow">
         <li><b>Asker</b><span>“I'll pay $50 for the best answer.” Set before publishing; skips the free 5-answer limit.</span></li>
@@ -499,7 +538,8 @@
 
     <h2>Free vs paid</h2>
     <div class="board">
-      <p class="goal" style="margin-top:0">The free product must stay useful, because participation drives the whole network. Paid buys more reach and more control.</p>
+      <p class="big">Free stays useful. Paid buys reach and control.</p>
+      <p class="goal">Participation drives the whole network, so the free product can't feel limited.</p>
       <div class="tablewrap"><table class="tiers">
         <tr><th>Feature</th><th>Free</th><th class="paid">Paid member</th></tr>
         <tr><td>Votes received per question</td><td>100</td><td class="paid">More</td></tr>
@@ -508,7 +548,7 @@
         <tr><td>Expert categories</td><td>1</td><td class="paid">Multiple</td></tr>
         <tr><td>Bounty winner</td><td>Top voted</td><td class="paid">Asker chooses</td></tr>
       </table></div>
-      <p class="foot">Both: ask, vote, earn bounties, badges. Membership comes later, not in the MVP. Until then everything is free, and the upgrade screen is a fake door ("coming soon, join the list") that measures who would pay. Pricing and exact limits are still TBD. The upgrade moment (hitting 100 votes or 5 answers) is a key screen to design.</p>
+      <p class="foot">Both: ask, vote, earn bounties, badges. Membership comes later, not in the MVP. Until then everything is free, and the upgrade screen is a fake door ("coming soon, join the list") that measures who would pay. Pricing and exact limits are still TBD.</p>
     </div>
 
     <h2>MVP scope and launch</h2>
@@ -571,7 +611,8 @@
 
     <h2>What this means for user experience</h2>
     <div class="board">
-      <p class="goal" style="margin-top:0">Before visuals: make the core loop feel easy and trustworthy, then prove it with real people.</p>
+      <p class="big">Make the core loop easy and trustworthy.</p>
+      <p class="goal">Do that before any visual design, then prove it with real people.</p>
       <div class="lbl">Screens, in priority order</div>
       <ol class="prio">
         <li class="hot"><b>First Guess result</b><span>The core screen. Winner, both votes, reasoning.</span></li>
