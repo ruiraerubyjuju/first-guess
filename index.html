@@ -282,6 +282,39 @@
 
   .opp, .north { padding: 20px 22px; }
   .qtypes { margin-top: 24px; }
+  /* Result card (anatomy) */
+  .anat { grid-template-columns: minmax(0, 330px) minmax(0, 1fr); gap: 72px; margin-top: 28px; }
+  .rc { position: relative; margin: 0; background: var(--field); border: 1px solid var(--line); border-radius: 20px; padding: 20px; box-shadow: 0 10px 30px rgba(21,21,26,.07); display: grid; gap: 16px; }
+  .rc-a { position: relative; }
+  .rc-a::before { content: ""; position: absolute; top: 50%; left: calc(100% + 21px); width: 26px; border-top: 1px dashed rgba(21,21,26,.3); }
+  .rc-a::after { content: attr(data-n); font-style: normal; position: absolute; top: 50%; left: calc(100% + 47px); transform: translateY(-50%); width: 20px; height: 20px; border-radius: 50%; background: var(--ink); color: var(--bg); font-size: 11px; font-weight: 700; display: grid; place-items: center; }
+  .rc-head { display: flex; justify-content: space-between; align-items: center; }
+  .rc-brand { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--coral-ink); }
+  .rc-pill { font-size: 12px; font-weight: 600; background: var(--coralT); color: var(--coral-ink); border-radius: 99px; padding: 3px 10px; }
+  .rc-win { display: flex; gap: 14px; align-items: center; }
+  .rc-thumb { width: 64px; height: 64px; border-radius: 14px; flex: none; background: linear-gradient(150deg, #FF8A6B, #FF5A3C 60%, #E0482B); }
+  .rc-opt { font-size: 28px; font-weight: 800; line-height: 1.05; letter-spacing: -.01em; }
+  .rc-name { font-size: 14px; color: var(--ink2); margin-top: 2px; }
+  .rc-row { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; font-weight: 600; }
+  .rc-row b { font-size: 17px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .rc-bar { height: 8px; background: rgba(21,21,26,.07); border-radius: 4px; overflow: hidden; margin-top: 6px; }
+  .rc-bar i { display: block; height: 100%; border-radius: 4px; }
+  .rc-meta { font-size: 13px; color: var(--ink2); }
+  .rc-why { font-size: 13px; line-height: 1.45; font-style: italic; background: var(--bg); border-radius: 12px; padding: 12px 14px; }
+  .rc-why span { display: block; font-style: normal; font-size: 12px; font-weight: 700; margin-bottom: 3px; }
+  .rc-cta { background: var(--ink); color: var(--bg); text-align: center; border-radius: 12px; padding: 11px; font-size: 14px; font-weight: 700; }
+  .rc figcaption { position: absolute; bottom: -26px; left: 0; right: 0; text-align: center; font-size: 12px; color: var(--ink2); }
+  .anat .callouts { gap: 14px; }
+  @media (max-width: 900px) {
+    .anat { grid-template-columns: 1fr; gap: 48px; }
+    .rc { max-width: 330px; margin-right: 72px; }
+  }
+  @media (max-width: 480px) {
+    .rc { margin-right: 60px; padding: 16px; }
+    .rc-a::before { left: calc(100% + 17px); width: 16px; }
+    .rc-a::after { left: calc(100% + 34px); }
+  }
+
   .vlab .pin { flex: 0 0 18px; width: 18px; height: 18px; }
   .rbtn .pin { background: var(--bg); color: var(--ink); }
   .facts { border-top: 0; padding-top: 0; margin-top: 24px; }
@@ -487,25 +520,27 @@
       <p class="big">The result screen is the product.</p>
       <p class="goal">Show the decision first and keep the raw content out of the way.</p>
       <div class="anat">
-        <div class="rcard" aria-label="Example result card">
-          <div class="rtag"><span class="pin">1</span>First Guess · <span class="pin">7</span><span class="pick">Community Pick</span></div>
-          <div class="rwin">Option B</div>
-          <div class="rsub">The coral linen dress</div>
-          <div class="vbar"><div class="vlab"><span><span class="pin">2</span>Public Vote</span><b>68% chose B</b></div><div class="vt"><i style="width:68%;background:var(--blue)"></i></div></div>
-          <div class="vbar"><div class="vlab"><span><span class="pin">3</span>Expert Vote · Fashion</span><b>81% chose B</b></div><div class="vt"><i style="width:81%;background:var(--amber)"></i></div></div>
-          <div class="rmeta"><span class="pin">4</span>142 people voted · 18 fashion experts</div>
-          <div class="rwhy"><span class="pin">5</span><b>Why people chose it</b>“Light and bright for a daytime wedding, and easy to dress up with the gold sandals.”</div>
-          <div class="rbtn"><span class="pin">6</span>Mark as decided</div>
-          <div class="exnote">Example</div>
-        </div>
+        <figure class="rc" aria-label="Example result card">
+          <div class="rc-a rc-head" data-n="1"><span class="rc-brand">First Guess</span><span class="rc-pill">Community Pick</span></div>
+          <div class="rc-a rc-win" data-n="2">
+            <span class="rc-thumb" aria-hidden="true"></span>
+            <div><div class="rc-opt">Option B</div><div class="rc-name">The coral linen dress</div></div>
+          </div>
+          <div class="rc-a rc-vote" data-n="3"><div class="rc-row"><span>Public Vote</span><b>68%</b></div><div class="rc-bar"><i style="width:68%;background:var(--blue)"></i></div></div>
+          <div class="rc-a rc-vote" data-n="4"><div class="rc-row"><span>Expert Vote · Fashion</span><b>81%</b></div><div class="rc-bar"><i style="width:81%;background:var(--amber)"></i></div></div>
+          <div class="rc-a rc-meta" data-n="5">142 people voted · 18 fashion experts</div>
+          <div class="rc-a rc-why" data-n="6"><span>Why people chose it</span>“Light and bright for a daytime wedding, and easy to dress up with the gold sandals.”</div>
+          <div class="rc-a rc-cta" data-n="7">Mark as decided</div>
+          <figcaption>Example</figcaption>
+        </figure>
         <ol class="callouts">
+          <li><b>Label the pick.</b> Community Pick (top voted) and Asker's Pick (paid) must never be confused.</li>
           <li><b>Winner first.</b> The option or answer, big and unmistakable.</li>
           <li><b>Public Vote.</b> Broad community sentiment.</li>
           <li><b>Expert Vote.</b> Relevant experts only, shown when available.</li>
           <li><b>Participation.</b> How many people and experts took part.</li>
           <li><b>Reasoning.</b> Why people chose it, kept short.</li>
           <li><b>Next step.</b> Act on it. This is how Successful Decisions are measured.</li>
-          <li><b>Label the pick.</b> Community Pick (top voted) and Asker's Pick (paid) must never be confused.</li>
         </ol>
       </div>
     </div>
