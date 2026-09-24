@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light only">
+<meta name="robots" content="noindex, nofollow">
+<title>First Guess</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+  :root {
+    color-scheme: light only;
+    --bg: #FBFAF7; --field: #FFFFFF; --ink: #15151A; --ink2: rgba(21,21,26,.62); --line: rgba(21,21,26,.12);
+    --coral: #FF5A3C; --coralT: #FFE9E3; --done: rgba(21,21,26,.4);
+    --green: #16A36B; --blue: #2F55F4; --amber: #F2A516;
+    --coral-ink: #C23A20; --amber-ink: #9A6300; --blueT: #E4E9FE; --greenT: #DDF3E9;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html { scroll-padding-top: 24px; scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--ink); font: 400 17px/1.65 Inter, -apple-system, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+
+  .layout { display: grid; grid-template-columns: 248px minmax(0, 1fr); min-height: 100vh; }
+  .side { position: sticky; top: 0; height: 100vh; overflow-y: auto; border-right: 1px solid var(--line); padding: 28px 20px 24px; display: flex; flex-direction: column; gap: 22px; }
+  .brand { font-size: 17px; font-weight: 800; letter-spacing: -.01em; }
+  .brand small { display: block; font-size: 13px; font-weight: 500; color: var(--ink2); margin-top: 2px; }
+  .tabs { display: flex; flex-direction: column; gap: 2px; }
+  .tab { font: inherit; font-size: 15px; font-weight: 600; color: var(--ink2); background: none; border: 0; border-radius: 6px; padding: 7px 10px; text-align: left; cursor: pointer; border-left: 2px solid transparent; }
+  .tab:hover { color: var(--ink); background: rgba(21,21,26,.04); }
+  .tab[aria-current="page"] { color: var(--ink); border-left-color: var(--coral); border-radius: 0 6px 6px 0; }
+  .tab:focus-visible, .sub a:focus-visible { outline: 2px solid var(--coral); outline-offset: 2px; }
+  .tab.nested { margin-left: 12px; font-size: 14px; }
+  .sub { display: flex; flex-direction: column; margin: 2px 0 10px 12px; }
+  .sub[hidden] { display: none; }
+  .sub a { font-size: 14px; color: var(--ink2); text-decoration: none; padding: 4px 10px; border-radius: 6px; line-height: 1.35; }
+  .sub a:hover { color: var(--ink); background: rgba(21,21,26,.04); }
+  .progress { margin-top: auto; font-size: 13px; color: var(--ink2); font-variant-numeric: tabular-nums; }
+  .progress[hidden] { display: none; }
+  .track { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; margin-top: 6px; }
+  .track i { display: block; height: 100%; width: 0; background: var(--coral); transition: width .25s; }
+
+  main { max-width: 752px; width: 100%; margin: 0 auto; padding: 44px 32px 120px; }
+  h1 { font-size: 40px; line-height: 1.1; font-weight: 800; letter-spacing: -.02em; margin-bottom: 14px; text-wrap: balance; }
+  .lead { color: var(--ink2); font-size: 19px; }
+  .note { margin-top: 14px; font-size: 15px; color: var(--ink2); }
+  h2 { font-size: 26px; line-height: 1.2; font-weight: 800; margin: 56px 0 6px; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; text-wrap: balance; }
+  h2 .count { font-size: 14px; font-weight: 600; color: var(--ink2); font-variant-numeric: tabular-nums; }
+  h2 .count.full { color: var(--coral); }
+  h3 { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--ink2); margin: 28px 0 8px; }
+  p { margin-top: 10px; }
+  .goal { color: var(--ink2); }
+  strong, b { font-weight: 700; }
+  ul.plain, ol.plain { padding-left: 22px; margin-top: 10px; }
+  ul.plain li, ol.plain li { margin-top: 4px; }
+  .from { color: var(--ink2); font-size: 15px; }
+  .out { margin-top: 12px; padding: 12px 16px; background: var(--coralT); border-radius: 8px; font-size: 15px; }
+  .tablewrap { overflow-x: auto; margin-top: 14px; }
+  table { width: 100%; border-collapse: collapse; font-size: 15px; }
+  th, td { text-align: left; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 13px; font-weight: 700; color: var(--ink2); }
+  footer { margin-top: 72px; font-size: 14px; color: var(--ink2); }
+  .panel[hidden] { display: none; }
+
+  /* Plan checklist */
+  ul.check { list-style: none; padding: 0; border-top: 1px solid var(--line); }
+  ul.check li { border-bottom: 1px solid var(--line); }
+  ul.check label { display: grid; grid-template-columns: 26px 1fr; gap: 10px; padding: 12px 0; cursor: pointer; }
+  ul.check input { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; margin-top: 3px; border: 2px solid var(--ink); border-radius: 5px; background: var(--field); cursor: pointer; display: grid; place-items: center; }
+  ul.check input:checked { background: var(--coral); border-color: var(--coral); }
+  ul.check input:checked::after { content: ""; width: 5px; height: 10px; border: solid #fff; border-width: 0 2px 2px 0; transform: translateY(-1px) rotate(45deg); }
+  ul.check input:focus-visible { outline: 2px solid var(--coral); outline-offset: 2px; }
+  ul.check .t { font-weight: 600; }
+  ul.check small { display: block; font-size: 15px; color: var(--ink2); margin-top: 2px; }
+  ul.check li.is-done .t { color: var(--done); text-decoration: line-through; text-decoration-color: rgba(21,21,26,.3); }
+  ul.check li.is-done small { color: var(--done); }
+
+  /* Decision log */
+  .key { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 14px; font-size: 14px; color: var(--ink2); }
+  .key span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; background: var(--c); }
+  label.f { display: block; font-size: 13px; font-weight: 600; color: var(--ink2); }
+  input.txt, textarea { font: inherit; font-size: 16px; color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; width: 100%; margin-top: 4px; }
+  input.txt:focus, textarea:focus { outline: none; border-color: var(--coral); box-shadow: 0 0 0 2px var(--coralT); }
+  textarea { resize: vertical; min-height: 40px; line-height: 1.45; }
+  .meeting { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }
+  .item { border-bottom: 1px solid var(--line); padding: 18px 0 20px; display: grid; grid-template-columns: 34px 1fr; gap: 4px 10px; }
+  h3 + .item { border-top: 1px solid var(--line); margin-top: 8px; }
+  .num { font-weight: 700; color: var(--ink2); font-variant-numeric: tabular-nums; padding-top: 1px; }
+  .num::after { content: ""; display: block; width: 10px; height: 10px; border-radius: 50%; margin-top: 8px; background: var(--c, transparent); border: 1.5px solid var(--c, var(--line)); }
+  .item[data-status="decided"] { --c: var(--green); }
+  .item[data-status="research"] { --c: var(--blue); }
+  .item[data-status="later"] { --c: var(--amber); }
+  .qt { font-weight: 600; margin: 0; }
+  .def { margin-top: 2px; font-size: 15px; color: var(--ink2); }
+  .def b { font-weight: 600; color: var(--coral); }
+  .seg { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .seg button { font: inherit; font-size: 14px; font-weight: 600; border: 1px solid var(--line); background: var(--field); color: var(--ink2); padding: 5px 12px; border-radius: 6px; cursor: pointer; }
+  .seg button:hover { border-color: var(--ink2); color: var(--ink); }
+  .seg button:focus-visible { outline: 2px solid var(--coral); outline-offset: 2px; }
+  .seg button[aria-pressed="true"][data-s="decided"] { background: var(--green); border-color: var(--green); color: #fff; }
+  .seg button[aria-pressed="true"][data-s="research"] { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .seg button[aria-pressed="true"][data-s="later"] { background: var(--amber); border-color: var(--amber); color: var(--ink); }
+  .seg button.use { border-style: dashed; }
+  .fields { display: grid; grid-template-columns: 1fr 160px; gap: 10px; margin-top: 10px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; align-items: center; }
+  .btn { font: inherit; font-size: 15px; font-weight: 700; border: 1px solid var(--ink); border-radius: 6px; padding: 9px 16px; cursor: pointer; background: var(--ink); color: var(--bg); }
+  .btn.alt { background: transparent; color: var(--ink); }
+  .btn.quiet { border-color: var(--line); color: var(--ink2); background: transparent; }
+  .btn:focus-visible { outline: 2px solid var(--coral); outline-offset: 2px; }
+  .toast { font-size: 14px; font-weight: 600; color: var(--green); }
+
+
+  /* PRD infographics */
+  .board { background: var(--field); border: 1px solid var(--line); border-radius: 14px; padding: 26px; margin-top: 16px; }
+  .board > :first-child { margin-top: 0; }
+  .big { font-size: 26px; line-height: 1.2; font-weight: 800; letter-spacing: -.01em; text-wrap: balance; }
+  .lbl { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); margin: 26px 0 10px; display: flex; align-items: center; gap: 8px; }
+  .foot { font-size: 14px; color: var(--ink2); margin-top: 16px; }
+
+  .loop { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; }
+  .loop li { position: relative; border: 1.5px solid var(--ink); border-radius: 10px; padding: 14px; }
+  .loop li:not(:last-child)::after { content: "→"; position: absolute; right: -18px; top: 50%; transform: translateY(-50%); font-weight: 700; }
+  .loop b { display: block; font-size: 18px; font-weight: 800; line-height: 1.2; }
+  .loop span { display: block; font-size: 13px; line-height: 1.4; color: var(--ink2); margin-top: 6px; }
+  .loop li.hot { background: var(--coral); border-color: var(--coral); color: #fff; }
+  .loop li.hot span { color: rgba(255,255,255,.92); }
+  .return { font-size: 14px; color: var(--ink2); margin-top: 12px; }
+  .facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+  .facts dt { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); }
+  .facts dd { margin: 2px 0 0; font-weight: 600; }
+  blockquote { margin-top: 20px; background: var(--ink); color: var(--bg); border-radius: 10px; padding: 20px 22px; font-size: 19px; font-weight: 600; line-height: 1.45; }
+  blockquote cite { display: block; font-style: normal; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--coral); margin-top: 10px; }
+
+  .sources { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 20px; }
+  .sources div { background: var(--bg); border-radius: 8px; padding: 12px 14px; }
+  .sources b { display: block; font-size: 15px; }
+  .sources span { display: block; font-size: 13px; line-height: 1.4; color: var(--ink2); margin-top: 2px; }
+  .down { text-align: center; font-size: 22px; font-weight: 700; color: var(--coral); margin: 8px 0; }
+  .opp, .north { background: var(--coralT); border-radius: 10px; padding: 18px 20px; }
+  .opp .lbl, .north .lbl { margin-top: 0; color: var(--coral-ink); }
+  .opp-t { font-size: 20px; font-weight: 800; line-height: 1.3; margin: 0; }
+  .opp ul { list-style: none; padding: 0; margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 15px; }
+  .opp li::before { content: "✓ "; color: var(--coral); font-weight: 800; }
+  .north p:last-child { font-size: 15px; }
+
+  .pyr { display: grid; gap: 8px; margin-top: 20px; }
+  .pyr .row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 16px; align-items: center; }
+  .pyr .bar { margin: 0 auto; border-radius: 8px; padding: 10px 12px; text-align: center; }
+  .pyr .bar b { display: block; font-size: 15px; line-height: 1.2; }
+  .pyr .bar small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .75; }
+  .pyr p { margin: 0; font-size: 14px; line-height: 1.45; color: var(--ink2); }
+  .pyr .r1 .bar { width: 46%; background: var(--ink); color: var(--bg); }
+  .pyr .r2 .bar { width: 64%; background: var(--amber); }
+  .pyr .r3 .bar { width: 82%; background: var(--coralT); }
+  .pyr .r4 .bar { width: 100%; background: var(--coral); color: #fff; }
+
+
+  .personas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .persona { background: var(--bg); border-radius: 10px; padding: 14px 16px; border-top: 4px solid var(--pc); }
+  .persona.ask { --pc: var(--coral); }
+  .persona.vote { --pc: var(--blue); }
+  .persona.curator { --pc: var(--ink); }
+  .persona.expert { --pc: var(--amber); }
+  .ptag { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink2); }
+  .persona h4 { font-size: 17px; font-weight: 800; line-height: 1.25; margin-top: 4px; }
+  .pq { font-size: 14px; font-style: italic; line-height: 1.4; margin-top: 6px; }
+  .persona dl { margin-top: 10px; display: grid; gap: 6px; }
+  .persona dt { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink2); }
+  .persona dd { margin: 0; font-size: 13px; line-height: 1.4; }
+  .qtypes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .qcol { background: var(--bg); border-radius: 10px; padding: 16px 18px; }
+  .qcol .lbl { margin-top: 0; }
+  .ex { font-weight: 600; font-style: italic; margin: 0; }
+  .steps { list-style: none; padding: 0; margin-top: 14px; display: grid; gap: 18px; }
+  .steps li { position: relative; border: 1px solid var(--line); background: var(--field); border-radius: 8px; padding: 10px 12px; }
+  .steps li:not(:last-child)::after { content: "↓"; position: absolute; left: 50%; bottom: -19px; transform: translateX(-50%); font-size: 14px; font-weight: 700; color: var(--ink2); }
+  .steps b { display: block; font-size: 15px; }
+  .steps span { display: block; font-size: 13px; color: var(--ink2); }
+  .steps li.res { background: var(--coral); border-color: var(--coral); color: #fff; }
+
+  .anat { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 24px; align-items: start; margin-top: 18px; }
+  .rcard { position: relative; border: 1.5px solid var(--ink); border-radius: 14px; padding: 18px; background: var(--field); }
+  .rtag { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--coral); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .rtag .pick { background: var(--coralT); color: var(--coral-ink); border-radius: 4px; padding: 1px 6px; }
+  .rwin { font-size: 34px; font-weight: 800; line-height: 1.05; margin-top: 8px; }
+  .rsub { font-size: 15px; color: var(--ink2); }
+  .vbar { margin-top: 14px; }
+  .vlab { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 600; }
+  .vlab span { display: inline-flex; align-items: center; gap: 6px; }
+  .vt { height: 10px; background: var(--line); border-radius: 5px; overflow: hidden; margin-top: 5px; }
+  .vt i { display: block; height: 100%; border-radius: 5px; }
+  .rmeta { font-size: 13px; color: var(--ink2); margin-top: 12px; display: flex; align-items: center; gap: 6px; }
+  .rwhy { font-size: 13px; line-height: 1.45; background: var(--bg); border-radius: 8px; padding: 10px 12px; margin-top: 12px; font-style: italic; }
+  .rwhy b { display: block; font-style: normal; font-size: 12px; margin-bottom: 2px; }
+  .rwhy .pin { float: right; }
+  .rbtn { margin-top: 14px; background: var(--ink); color: var(--bg); border-radius: 8px; text-align: center; padding: 9px; font-size: 14px; font-weight: 700; display: flex; justify-content: center; align-items: center; gap: 8px; }
+  .exnote { position: absolute; top: -10px; right: 12px; background: var(--field); border: 1px solid var(--line); border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink2); padding: 0 6px; }
+  .pin { display: inline-grid; place-items: center; width: 18px; min-width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: var(--bg); font-size: 11px; font-weight: 700; font-style: normal; letter-spacing: 0; flex: none; }
+  .callouts { list-style: none; padding: 0; counter-reset: c; display: grid; gap: 10px; margin: 0; }
+  .callouts li { counter-increment: c; position: relative; padding-left: 30px; font-size: 15px; line-height: 1.45; }
+  .callouts li::before { content: counter(c); position: absolute; left: 0; top: 2px; display: grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: var(--ink); color: var(--bg); font-size: 11px; font-weight: 700; }
+
+  .flow { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; }
+  .flow li { position: relative; background: var(--greenT); border-radius: 8px; padding: 12px 14px; }
+  .flow li:not(:last-child)::after { content: "→"; position: absolute; right: -17px; top: 50%; transform: translateY(-50%); font-weight: 700; color: var(--green); }
+  .flow li.end { background: var(--green); color: #fff; }
+  .flow b { display: block; font-size: 15px; }
+  .flow span { display: block; font-size: 13px; line-height: 1.4; opacity: .8; margin-top: 2px; }
+  .stage { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; background: var(--line); color: var(--ink2); border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
+  .stage.now { background: var(--coralT); color: var(--coral-ink); }
+  table.rev td { font-size: 14px; }
+  .rule { font-size: 14px; font-weight: 600; margin-top: 14px; }
+
+  table.tiers th.paid, table.tiers td.paid { background: var(--coralT); font-weight: 700; padding-left: 12px; }
+  table.tiers th.paid { color: var(--coral-ink); }
+  table.tiers td:nth-child(2) { font-variant-numeric: tabular-nums; }
+
+  .scope { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; }
+  .ins, .outs { list-style: none; padding: 0; display: grid; gap: 6px; }
+  .ins li { font-size: 14px; line-height: 1.4; color: var(--ink2); padding-left: 22px; position: relative; }
+  .ins li::before { content: "✓"; position: absolute; left: 0; color: var(--green); font-weight: 800; }
+  .ins b { color: var(--ink); margin-right: 4px; }
+  .outs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .outs li { font-size: 13px; background: var(--bg); color: var(--ink2); border-radius: 4px; padding: 3px 8px; text-decoration: line-through; text-decoration-color: rgba(21,21,26,.3); }
+  .phases { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .phases li { border-top: 4px solid var(--line); padding-top: 10px; }
+  .phases li.now { border-top-color: var(--coral); }
+  .phases small { font-size: 12px; font-weight: 700; color: var(--ink2); }
+  .phases b { display: block; font-size: 16px; }
+  .phases span { display: block; font-size: 13px; line-height: 1.4; color: var(--ink2); margin-top: 4px; }
+  .phases em { display: block; font-size: 13px; font-weight: 600; margin-top: 8px; }
+
+  .north { margin-top: 20px; }
+  .hyp { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .hyp li { background: var(--bg); border-radius: 8px; padding: 10px 12px; font-size: 14px; line-height: 1.4; }
+  .hyp small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink2); margin-bottom: 3px; }
+  .hyp li.t { background: var(--blueT); }
+  .hyp li.t small { color: var(--blue); }
+  .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; background: var(--blueT); border: 1px solid var(--blue); margin-right: 6px; }
+
+  .prio { list-style: none; padding: 0; counter-reset: p; display: grid; gap: 6px; }
+  .prio li { counter-increment: p; display: grid; grid-template-columns: 28px 170px 1fr; gap: 10px; align-items: baseline; padding: 8px 12px; background: var(--bg); border-radius: 8px; font-size: 14px; }
+  .prio li::before { content: counter(p, decimal-leading-zero); font-weight: 800; color: var(--ink2); }
+  .prio b { font-size: 15px; }
+  .prio span { color: var(--ink2); }
+  .prio li.hot { background: var(--coral); color: #fff; }
+  .prio li.hot::before, .prio li.hot span { color: rgba(255,255,255,.92); }
+  .tensions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .tensions div { border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; }
+  .tensions b { display: block; font-size: 15px; }
+  .tensions div > span { display: block; font-size: 14px; color: var(--ink2); margin-top: 2px; }
+
+  @media (max-width: 1100px) {
+    .anat { grid-template-columns: 1fr; }
+    .rcard { max-width: 340px; }
+  }
+  @media (max-width: 640px) {
+    .board { padding: 18px 16px; }
+    .big { font-size: 22px; }
+    .loop { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .loop li::after { display: none; }
+    .facts, .qtypes, .scope, .tensions, .personas { grid-template-columns: 1fr; }
+    .sources, .hyp, .phases { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .pyr .row { grid-template-columns: 1fr; gap: 4px; }
+    .pyr p { text-align: center; margin-bottom: 6px; }
+    .flow { grid-template-columns: 1fr; gap: 20px; }
+    .flow li:not(:last-child)::after { content: "↓"; right: auto; left: 50%; top: auto; bottom: -19px; transform: translateX(-50%); }
+    .prio li { grid-template-columns: 26px 1fr; }
+    .prio span { grid-column: 2; }
+  }
+
+  @media (max-width: 860px) {
+    html { scroll-padding-top: 110px; }
+    .layout { display: block; }
+    .side { position: sticky; height: auto; z-index: 5; background: rgba(251,250,247,.96); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-right: 0; border-bottom: 1px solid var(--line); padding: 12px 16px 0; gap: 6px; }
+    .brand { display: flex; justify-content: space-between; align-items: baseline; font-size: 15px; }
+    .brand small { margin: 0; }
+    .tabs { flex-direction: row; gap: 18px; overflow-x: auto; scrollbar-width: none; }
+    .tab { padding: 6px 0 10px; border-left: 0; border-bottom: 2px solid transparent; border-radius: 0; white-space: nowrap; }
+    .tab:hover { background: none; }
+    .tab.nested { margin-left: 0; font-size: 15px; }
+    .tab[aria-current="page"] { border-bottom-color: var(--coral); border-radius: 0; }
+    .sub { display: none !important; }
+    .progress { margin: 0 -16px; font-size: 0; }
+    .track { margin: 0; border-radius: 0; height: 3px; }
+    main { padding: 36px 16px 100px; margin: 0 auto; }
+  }
+  @media (max-width: 600px) {
+    h1 { font-size: 32px; } h2 { font-size: 23px; margin-top: 48px; }
+    .meeting, .fields { grid-template-columns: 1fr; }
+    .item { grid-template-columns: 28px 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .track i { transition: none; } }
+</style>
+</head>
+<body>
+
+<div class="layout">
+<aside class="side">
+  <div class="brand">First Guess<small id="status"></small></div>
+  <nav class="tabs" aria-label="Pages">
+    <button type="button" class="tab" data-panel="summary">PRD summary</button>
+    <div class="sub" data-for="summary"></div>
+    <button type="button" class="tab" data-panel="plan">Phase 1</button>
+    <div class="sub" data-for="plan"></div>
+  </nav>
+  <div class="progress" id="progress"><span id="ptext"></span><div class="track"><i id="track"></i></div></div>
+</aside>
+
+<main>
+  <!-- PRD SUMMARY -->
+  <section class="panel" id="summary">
+    <h1>PRD summary</h1>
+    <p class="lead">PRD v0.1 in eleven pictures, from the view of the product design engineer.</p>
+
+    <h2>Overview</h2>
+    <div class="board">
+      <p class="big">Help people decide, not browse.</p>
+      <p class="goal">A decision platform where people help each other make better decisions. Every question ends in one clear answer: the First Guess.</p>
+      <div class="lbl">The core loop</div>
+      <ol class="loop">
+        <li><b>Ask</b><span>Someone needs help with a decision</span></li>
+        <li><b>Answer</b><span>Curators suggest options on open questions</span></li>
+        <li><b>Vote</b><span>Everyone votes; experts also form a separate Expert Vote</span></li>
+        <li class="hot"><b>First Guess</b><span>One clear winner the asker can act on</span></li>
+      </ol>
+      <p class="return">↺ Good decision → the asker comes back, and helpers build reputation and earnings</p>
+      <dl class="facts">
+        <div><dt>Status</dt><dd>Concept, pre-MVP</dd></div>
+        <div><dt>Launch focus</dt><dd>Gifting decisions</dd></div>
+        <div><dt>Rae's role</dt><dd>Product design engineer</dd></div>
+      </dl>
+      <blockquote>“The internet has made it easy to find opinions. First Guess is designed to make it easier to make decisions.”<cite>Product thesis</cite></blockquote>
+    </div>
+
+    <h2>Problem to opportunity</h2>
+    <div class="board">
+      <p class="big">Plenty of opinions, no decision.</p>
+      <p class="goal">Every tool people use today helps them find more options. None of them is built to help finish a decision.</p>
+      <div class="sources">
+        <div><b>Search</b><span>Too many options, ranked by SEO</span></div>
+        <div><b>Algorithms</b><span>Optimise for engagement and ads, not your choice</span></div>
+        <div><b>AI</b><span>Can recommend, but lacks taste and lived experience</span></div>
+        <div><b>Social media</b><span>Plenty of opinions, not structured to reach a decision</span></div>
+        <div><b>Friends</b><span>Useful, but busy and awkward to ask again and again</span></div>
+        <div><b>Reviews</b><span>About the product, not the context of your decision</span></div>
+      </div>
+      <div class="down" aria-hidden="true">↓</div>
+      <div class="opp">
+        <div class="lbl">The opportunity</div>
+        <p class="opp-t">Turn human judgment into a structured decision resource.</p>
+        <ul>
+          <li>Real people with taste and experience</li>
+          <li>Structured around one question</li>
+          <li>Ends in a clear answer, not a feed</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2>One account, layered roles</h2>
+    <div class="board">
+      <p class="big">One account. No fixed roles.</p>
+      <p class="goal">Everyone can ask, vote and answer. The names describe what someone does or knows, not a type of account.</p>
+      <div class="pyr">
+        <div class="row r1"><div class="bar"><b>Reputation</b><small>Earned over time</small></div><p>Badges: Top Answerer (answers that win) and Good Taste (votes that match the experts).</p></div>
+        <div class="row r2"><div class="bar"><b>Expert</b><small>Status layer</small></div><p>Pick 1 category for free (more on paid). Your vote on that topic also counts in the Expert Vote.</p></div>
+        <div class="row r3"><div class="bar"><b>Curator</b><small>Behaviour</small></div><p>Anyone who writes original answers to open questions. Can earn bounties and rewards.</p></div>
+        <div class="row r4"><div class="bar"><b>First Guesser</b><small>Every user</small></div><p>Ask a question · Vote on options · Answer open questions</p></div>
+      </div>
+      <p class="foot">Built from the bottom up: everyone starts as a First Guesser. The layers above come from behaviour, so nobody picks a role at sign-up.</p>
+    </div>
+
+    <h2>Who it's for</h2>
+    <div class="board">
+      <p class="big">Three kinds of askers, three kinds of helpers.</p>
+      <p class="goal">Proto-personas based on the PRD, not on research yet. Phase 1 interviews check them, one person per type.</p>
+      <div class="lbl">Askers · people who need a decision</div>
+      <div class="personas">
+        <article class="persona ask">
+          <div class="ptag">Asker · Open question</div>
+          <h4>The gift giver</h4>
+          <p class="pq">“What's the best $200 birthday gift for my sister?”</p>
+          <dl><div><dt>Needs</dt><dd>Ideas they wouldn't think of, before the deadline</dd></div><div><dt>Worry</dt><dd>Generic suggestions, running out of time</dd></div><div><dt>Success</dt><dd>Buys one and marks it decided</dd></div></dl>
+        </article>
+        <article class="persona ask">
+          <div class="ptag">Asker · Closed question</div>
+          <h4>The style chooser</h4>
+          <p class="pq">“Which of these three dresses should I wear?”</p>
+          <dl><div><dt>Needs</dt><dd>A quick, confident verdict from people with taste</dd></div><div><dt>Worry</dt><dd>Friends who are just being nice</dd></div><div><dt>Success</dt><dd>One clear winner and the reason why</dd></div></dl>
+        </article>
+        <article class="persona ask">
+          <div class="ptag">Asker · Open question + bounty</div>
+          <h4>The big-purchase asker</h4>
+          <p class="pq">“I'll pay $50 for the best answer.”</p>
+          <dl><div><dt>Needs</dt><dd>Well-reasoned answers and the expert view</dd></div><div><dt>Worry</dt><dd>Paid or biased advice</dd></div><div><dt>Success</dt><dd>Trusts the answer enough to spend on it</dd></div></dl>
+        </article>
+      </div>
+      <div class="lbl">Helpers · people who help decide</div>
+      <div class="personas">
+        <article class="persona vote">
+          <div class="ptag">Helper · First Guesser</div>
+          <h4>The quick voter</h4>
+          <p class="pq">Taps through votes in spare moments.</p>
+          <dl><div><dt>Wants</dt><dd>Fun, feeling helpful, being right (Good Taste badge)</dd></div><div><dt>Needs</dt><dd>Fast, low-effort voting</dd></div><div><dt>Worry</dt><dd>Too much to read, nothing in it for them</dd></div></dl>
+        </article>
+        <article class="persona curator">
+          <div class="ptag">Helper · Curator</div>
+          <h4>The answer writer</h4>
+          <p class="pq">Writes suggestions for open questions.</p>
+          <dl><div><dt>Wants</dt><dd>Bounties and the Top Answerer badge</dd></div><div><dt>Needs</dt><dd>Good questions and a fair way to pick the winner</dd></div><div><dt>Worry</dt><dd>Effort with no reward</dd></div></dl>
+        </article>
+        <article class="persona expert">
+          <div class="ptag">Helper · Expert</div>
+          <h4>The expert</h4>
+          <p class="pq">Knows one category well, such as Fashion or Travel.</p>
+          <dl><div><dt>Wants</dt><dd>Status; their vote counts in the Expert Vote</dd></div><div><dt>Needs</dt><dd>Questions in their category and visible credit</dd></div><div><dt>Worry</dt><dd>Fake experts watering down the Expert Vote</dd></div></dl>
+        </article>
+      </div>
+      <p class="foot">Each asker gets a journey map in Phase 1. The three helpers share one map with a lane each.</p>
+    </div>
+
+    <h2>Two question types</h2>
+    <div class="board">
+      <p class="goal" style="margin-top:0">Closed questions collect votes on options the asker already has. Open questions collect new ideas first, then votes on those ideas.</p>
+      <div class="qtypes">
+        <div class="qcol">
+          <div class="lbl">Closed-ended</div>
+          <p class="ex">“Which of these three dresses should I wear?”</p>
+          <ol class="steps">
+            <li><b>Asker adds options</b><span>A · B · C</span></li>
+            <li><b>Everyone votes</b><span>Public Vote + Expert Vote</span></li>
+            <li class="res"><b>First Guess: Option B</b></li>
+          </ol>
+          <p class="foot">Free: up to 100 votes</p>
+        </div>
+        <div class="qcol">
+          <div class="lbl">Open-ended</div>
+          <p class="ex">“What's the best $200 birthday gift for my sister?”</p>
+          <ol class="steps">
+            <li><b>Curators submit answers</b><span>Answer #1 … #5</span></li>
+            <li><b>Everyone votes on answers</b><span>Highest vote wins, or Asker's Pick (paid)</span></li>
+            <li class="res"><b>First Guess: Answer #3</b></li>
+          </ol>
+          <p class="foot">Free: up to 5 answers · unlimited with a bounty</p>
+        </div>
+      </div>
+    </div>
+
+    <h2>Anatomy of a First Guess</h2>
+    <div class="board">
+      <p class="goal" style="margin-top:0">The result screen is the product. It should show the decision first and keep the raw content out of the way.</p>
+      <div class="anat">
+        <div class="rcard" aria-label="Example result card">
+          <div class="rtag"><span class="pin">1</span>First Guess · <span class="pin">7</span><span class="pick">Community Pick</span></div>
+          <div class="rwin">Option B</div>
+          <div class="rsub">The coral linen dress</div>
+          <div class="vbar"><div class="vlab"><span><span class="pin">2</span>Public Vote</span><b>68% chose B</b></div><div class="vt"><i style="width:68%;background:var(--blue)"></i></div></div>
+          <div class="vbar"><div class="vlab"><span><span class="pin">3</span>Expert Vote · Fashion</span><b>81% chose B</b></div><div class="vt"><i style="width:81%;background:var(--amber)"></i></div></div>
+          <div class="rmeta"><span class="pin">4</span>142 people voted · 18 fashion experts</div>
+          <div class="rwhy"><span class="pin">5</span><b>Why people chose it</b>“Light and bright for a daytime wedding, and easy to dress up with the gold sandals.”</div>
+          <div class="rbtn"><span class="pin">6</span>Mark as decided</div>
+          <div class="exnote">Example</div>
+        </div>
+        <ol class="callouts">
+          <li><b>Winner first.</b> The option or answer, big and unmistakable.</li>
+          <li><b>Public Vote.</b> Broad community sentiment.</li>
+          <li><b>Expert Vote.</b> Relevant experts only, shown when available.</li>
+          <li><b>Participation.</b> How many people and experts took part.</li>
+          <li><b>Reasoning.</b> Why people chose it, kept short.</li>
+          <li><b>Next step.</b> Act on it. This is how Successful Decisions are measured.</li>
+          <li><b>Label the pick.</b> Community Pick (top voted) and Asker's Pick (paid) must never be confused.</li>
+        </ol>
+      </div>
+    </div>
+
+    <h2>How money moves</h2>
+    <div class="board">
+      <p class="goal" style="margin-top:0">Bounties come from the asker for one question. Answer Rewards come from the platform for consistent quality. They are separate systems.</p>
+      <div class="lbl">Bounty</div>
+      <ol class="flow">
+        <li><b>Asker</b><span>“I'll pay $50 for the best answer.” Set before publishing; skips the free 5-answer limit.</span></li>
+        <li><b>First Guess</b><span>Takes a platform fee, handles payment, fraud and disputes</span></li>
+        <li class="end"><b>Winning answer</b><span>Top voted by default, or chosen by a paid asker</span></li>
+      </ol>
+      <div class="lbl">Answer Rewards <span class="stage">Later</span></div>
+      <ol class="flow">
+        <li><b>Platform pool</b><span>Funded by First Guess</span></li>
+        <li><b>Eligibility bar</b><span>Volume, quality, votes, win rate, asker feedback, outcomes</span></li>
+        <li class="end"><b>Top contributors</b><span>Paid for useful answers, not for the most answers</span></li>
+      </ol>
+      <div class="lbl">Where First Guess makes money</div>
+      <div class="tablewrap"><table class="rev">
+        <tr><td><b>Membership</b></td><td>More reach, winner control, unlimited answering. Tested with a fake door in the MVP</td><td><span class="stage">Later</span></td></tr>
+        <tr><td><b>Bounty fee</b></td><td>A cut of every bounty paid out</td><td><span class="stage now">MVP</span></td></tr>
+        <tr><td><b>Affiliate</b></td><td>Revenue when people buy what's recommended</td><td><span class="stage">Later</span></td></tr>
+        <tr><td><b>Brands</b></td><td>Paid placement, always clearly labelled</td><td><span class="stage">Future</span></td></tr>
+      </table></div>
+      <p class="rule">Rule: paid exposure must never pass as independent expert judgment.</p>
+    </div>
+
+    <h2>Free vs paid</h2>
+    <div class="board">
+      <p class="goal" style="margin-top:0">The free product must stay useful, because participation drives the whole network. Paid buys more reach and more control.</p>
+      <div class="tablewrap"><table class="tiers">
+        <tr><th>Feature</th><th>Free</th><th class="paid">Paid member</th></tr>
+        <tr><td>Votes received per question</td><td>100</td><td class="paid">More</td></tr>
+        <tr><td>Answers received (non-bounty)</td><td>5</td><td class="paid">More</td></tr>
+        <tr><td>Open answers you can submit</td><td>Limited</td><td class="paid">Unlimited</td></tr>
+        <tr><td>Expert categories</td><td>1</td><td class="paid">Multiple</td></tr>
+        <tr><td>Bounty winner</td><td>Top voted</td><td class="paid">Asker chooses</td></tr>
+      </table></div>
+      <p class="foot">Both: ask, vote, earn bounties, badges. Membership comes later, not in the MVP. Until then everything is free, and the upgrade screen is a fake door ("coming soon, join the list") that measures who would pay. Pricing and exact limits are still TBD. The upgrade moment (hitting 100 votes or 5 answers) is a key screen to design.</p>
+    </div>
+
+    <h2>MVP scope and launch</h2>
+    <div class="board">
+      <p class="big">Prove the loop before building the platform.</p>
+      <p class="goal">The first version can be partly manual. Complexity is added only once behaviour proves it's needed.</p>
+      <div class="scope">
+        <div>
+          <div class="lbl">In the MVP</div>
+          <ul class="ins">
+            <li><b>Accounts</b> Sign up, profile, 1 expert category</li>
+            <li><b>Questions</b> Closed and open, category, status, counts</li>
+            <li><b>Voting</b> Public vote, expert tag, basic totals</li>
+            <li><b>Answers</b> Submit, view, vote, find the top one</li>
+            <li><b>Bounty</b> Set before publishing, pay, award winner</li>
+            <li><b>Upgrade test</b> "Coming soon" prompt at 100 votes or 5 answers</li>
+            <li><b>Results</b> First Guess, both votes, ranking</li>
+            <li><b>Moderation</b> Report, remove spam, admin review</li>
+          </ul>
+        </div>
+        <div>
+          <div class="lbl">Not yet</div>
+          <ul class="outs">
+            <li>AI matching</li><li>Social feed</li><li>Brand marketplace</li><li>Personalisation</li><li>Complex reputation maths</li><li>Automated expert checks</li><li>Anti-collusion algorithms</li><li>Native mobile apps</li><li>Creator analytics</li>
+          </ul>
+        </div>
+      </div>
+      <div class="lbl">Launch phases</div>
+      <ol class="phases">
+        <li class="now"><small>Phase 1</small><b>Concierge</b><span>20–30 real questions, 20–50 contributors, run by hand, gifting first</span><em>Is the First Guess genuinely useful?</em></li>
+        <li><small>Phase 2</small><b>MVP</b><span>100+ askers, 100+ contributors, first paid questions and bounties</span><em>Does it run without Kiara?</em></li>
+        <li><small>Phase 3</small><b>Monetise</b><span>Membership, bounty take rate, contributor rewards</span><em>Can it support real incentives?</em></li>
+        <li><small>Phase 4</small><b>Scale</b><span>Matching, AI synthesis, reputation, anti-fraud, brand marketplace</span><em>Only after demand is proven</em></li>
+      </ol>
+    </div>
+
+    <h2>How success is measured</h2>
+    <div class="board">
+      <p class="big">Success = decisions, not content.</p>
+      <p class="goal">The MVP doesn't win with a beautiful app or thousands of sign-ups. It wins if people want the collective judgment, help willingly, and some will pay.</p>
+      <div class="north">
+        <div class="lbl">North star metric</div>
+        <p class="opp-t">Successful Decisions</p>
+        <p>The asker gets useful recommendations and takes a real next step: picks an answer, clicks, buys, marks it resolved or says they're satisfied.</p>
+      </div>
+      <div class="lbl">9 hypotheses to test, not assume</div>
+      <ol class="hyp">
+        <li class="t"><small>H1 · Human judgment</small>People prefer human judgment over search or AI for some decisions</li>
+        <li><small>H2 · Supply</small>People will answer strangers' questions voluntarily</li>
+        <li class="t"><small>H3 · Bounty</small>A bounty raises answer quality or participation</li>
+        <li class="t"><small>H4 · Expert</small>People care about public vs expert judgment</li>
+        <li class="t"><small>H5 · Clarity</small>One clear First Guess beats a pile of opinions</li>
+        <li><small>H6 · Payment</small>Some will pay for more votes and answers</li>
+        <li><small>H7 · Control</small>Some will pay to choose their own winner</li>
+        <li><small>H8 · Retention</small>Good contributors stay for money and reputation</li>
+        <li><small>H9 · Reputation</small>Judgment-based reputation beats follower counts</li>
+      </ol>
+      <p class="foot"><span class="swatch"></span>Highlighted: the hypotheses Phase 1 research tests directly in interviews and prototype tests.</p>
+    </div>
+
+    <h2>What this means for user experience</h2>
+    <div class="board">
+      <p class="goal" style="margin-top:0">Before visuals: make the core loop feel easy and trustworthy, then prove it with real people.</p>
+      <div class="lbl">Screens, in priority order</div>
+      <ol class="prio">
+        <li class="hot"><b>First Guess result</b><span>The core screen. Winner, both votes, reasoning.</span></li>
+        <li><b>Ask flow</b><span>Type, category, options or prompt, bounty</span></li>
+        <li><b>Voting</b><span>Fast, low effort, closer to swiping</span></li>
+        <li><b>Answer submission</b><span>Prompts that push quality over volume</span></li>
+        <li><b>Upgrade moment</b><span>Fake door at 100 votes or 5 answers: “coming soon, join the list”</span></li>
+        <li><b>Profile</b><span>Expert category, badges, earnings</span></li>
+        <li><b>Onboarding</b><span>Everyone can do everything, no role jargon</span></li>
+      </ol>
+      <div class="lbl">Design tensions to solve</div>
+      <div class="tensions">
+        <div><b><span style="color:var(--blue)">Public</span> vs <span style="color:var(--amber-ink)">Expert</span></b><span>Show both clearly, even when they disagree.</span></div>
+        <div><b>Community vs Asker's Pick</b><span>Label who chose the winner so trust holds.</span></div>
+        <div><b><span style="color:var(--green)">Money</span> vs trust</b><span>Bounties and brands must never look like expert judgment.</span></div>
+        <div><b>Vocabulary</b><span>First Guesser, Curator, Expert: too many terms for day one.</span></div>
+      </div>
+      <p class="foot">Open questions to settle in the kickoff: anonymous votes? Can votes change? How is expertise set? When does a question close? What if no answer is good enough? All 24 are in the decision log.</p>
+    </div>
+  </section>
+
+  <!-- PHASE 1 -->
+  <section class="panel" id="plan" hidden>
+    <h1>Phase 1</h1>
+    <p class="lead">Four weeks to go from the PRD to wireframes that are ready for visual design. The main job is to prove that ask → answer → vote → First Guess works before anything gets styled.</p>
+    <p class="note">Tick a task when it's done. Ticks are saved in this browser.</p>
+    <div class="tablewrap"><table>
+      <tr><th>Week</th><th>Focus</th><th>You end the week with</th></tr>
+      <tr><td>1</td><td>Align with Kiara and Rae, start research</td><td>Decision log, interviews booked</td></tr>
+      <tr><td>2</td><td>Finish research, define the structure</td><td>Findings, lifecycle, sitemap</td></tr>
+      <tr><td>3</td><td>User flows, then low-fi wireframes (result page first)</td><td>User flows, clickable prototype</td></tr>
+      <tr><td>4</td><td>Test and hand off</td><td>Test report, wireframes and a moodboard ready for visual design</td></tr>
+    </table></div>
+    <div id="weeks"></div>
+    <h2>What got cut to fit 4 weeks</h2>
+    <p>The first draft of this plan ran 6 weeks. To fit into four:</p>
+    <ul class="plain">
+      <li>Research and design now overlap instead of running one after the other.</li>
+      <li>6 interviews (one per persona type) instead of 5–8, and a shorter competitor list.</li>
+      <li>4 journey maps instead of one per persona: the three helpers share one map.</li>
+      <li>Profile screen and reported content are left for later.</li>
+      <li>Mid-fi covers the core screens, not every screen and state.</li>
+    </ul>
+    <p><b>If a week slips, protect these three:</b> the decision log, the result page (explored and tested), and the pilot.</p>
+  </section>
+
+  <!-- DECISION LOG: hidden for now; to bring it back, restore its sidebar button and sub div -->
+  <section class="panel" id="log" hidden>
+    <h1>Decision log</h1>
+    <p class="lead">Fill this in during the kickoff with Kiara. For each question, use the suggested answer or write what you agreed, then mark it decided, moved to research, or parked for later.</p>
+    <p class="note">Answers save as you type, in this browser.</p>
+    <div class="key">
+      <span style="--c: var(--green)">Decided</span>
+      <span style="--c: var(--blue)">Move to research</span>
+      <span style="--c: var(--amber)">Park for later</span>
+    </div>
+
+    <h2>Kickoff details</h2>
+    <div class="meeting">
+      <div><label class="f" for="m-date">Date</label><input class="txt" id="m-date" type="date" data-k="meta.date"></div>
+      <div><label class="f" for="m-who">Who was there</label><input class="txt" id="m-who" placeholder="Rae, Kiara" data-k="meta.who"></div>
+      <div><label class="f" for="m-next">Next check-in</label><input class="txt" id="m-next" type="date" data-k="meta.next"></div>
+    </div>
+
+    <h2>A. Decide in the kickoff</h2>
+    <p class="goal">If these stay open, the wireframes will need redoing.</p>
+    <div id="qlist"></div>
+
+    <h2>B. Test in research</h2>
+    <p class="goal">Kiara shouldn't decide these alone; users should inform them. Anything from section A you move to research shows up here too.</p>
+    <ul class="plain" id="rlist"></ul>
+
+    <h2>C. Park until later</h2>
+    <p class="goal">Not needed for MVP design.</p>
+    <ul class="plain" id="llist"></ul>
+
+    <h2>Keep a copy</h2>
+    <p class="goal">Copy the log as Markdown to paste into Obsidian or send to Kiara, or download it as a file.</p>
+    <div class="actions">
+      <button class="btn" type="button" id="cp">Copy as Markdown</button>
+      <button class="btn alt" type="button" id="dl">Download .md</button>
+      <button class="btn quiet" type="button" id="reset">Clear all answers</button>
+      <span class="toast" id="toast" hidden></span>
+    </div>
+  </section>
+
+  <footer>First Guess · PRD v0.1 · updated 24 Sep 2026</footer>
+</main>
+</div>
+
+<script>
+const PLAN = [{"id": "w1", "title": "Week 1 · Align and start research", "goal": "Settle the decisions that would otherwise block design, and get interviews in the calendar straight away.", "end": "decision log signed off, audit notes done, interviews booked.", "groups": [["Align with Kiara and Rae (days 1–2)", [["w1-ask", "Answer the four questions that can't wait", "Who runs the pilot? Budget for interviews? Is gifting the launch category? Is there an MVP deadline?"], ["w1-kickoff", "Run the kickoff with Kiara (60–90 min)", "Go through the 24 questions in the decision log. Each has a suggested default, so most are a quick yes or no."], ["w1-sort", "Sort each open question into decide now, test in research, or later", ""], ["w1-scope", "Agree on scope", "Web only, mobile-first width, MVP features only."], ["w1-log", "Copy the finished decision log into Obsidian", ""]]], ["Start research (days 2–5)", [["w1-recruit", "Recruit 6 interviewees and book them for early week 2", "One of each type. Askers: a gift giver, a style chooser, a big-purchase asker. Helpers: a quick voter, an answer writer, an expert."], ["w1-guide", "Write the interview guide", "Askers: \"Tell me about the last gift you struggled to decide on. Who did you ask? What made you trust an answer?\" Helpers: \"Why do you answer strangers' questions online? What would make you stop?\""], ["w1-audit", "Do a quick competitor audit", "Reddit (r/whatshouldibuy), Quora, Stack Overflow bounties, Wirecutter, Fiverr. For each one: how it collects input, how it shows the result, how it builds trust."], ["w1-early", "Do the first 1–2 interviews if people are free", ""]]]]}, {"id": "w2", "title": "Week 2 · Finish research and define the structure", "goal": "Learn what users actually need, then map the product before drawing any screens.", "end": "findings, 6 proto-personas, lifecycle, journeys, sitemap, content model, word list.", "groups": [["Research (days 1–3)", [["w2-interviews", "Finish the interviews (6 in total)", "Focus on H1 (human judgment vs AI), H4 (public vs expert), H5 (one answer vs a list) and H3 (does a bounty change behaviour?)."], ["w2-synth", "Write up the findings", "What surprised us, and which parts of the plan or PRD they change."], ["w2-personas", "Write 6 short proto-personas: 3 askers and 3 helpers", "Askers: the gift giver (open question, often a deadline), the style chooser (picking between options, often visual), the big-purchase asker (high stakes, most likely to pay a bounty). Helpers: the quick voter (taps through votes), the answer writer or Curator (writes suggestions, wants bounties and reputation), the expert (knows one category, wants status). With one interview each they stay rough, so mark what is guessed."], ["w2-share", "Go through the findings with Kiara", ""]]], ["Define (days 3–5)", [["w2-life", "Draw the question lifecycle", "Draft → live → limit reached or closed → First Guess → resolved. This shows which states each screen needs."], ["w2-journeys", "Make 4 journey maps from the interviews", "One per asker: gift giver (open question), style chooser (closed question), big-purchase asker (open question with bounty). One for helpers, with a lane each for the quick voter, answer writer and expert. Each map shows the stages, what they do, think and feel, where it hurts, and where First Guess can help."], ["w2-sitemap", "Make a sitemap of the MVP screens only", ""], ["w2-model", "Write the content model", "What a Question, Answer, Vote, Result and Profile each contain. The builder needs this too."], ["w2-words", "Make a word list of what users see", "For example, \"Curator\" stays an internal name and the UI just says \"answer\"."]]]]}, {"id": "w3", "title": "Week 3 · User flows and low-fi wireframes", "goal": "User flows first, then grey-box wireframes, 375 width first. Test the structure, not the style. Start with the riskiest screen.", "end": "user flows, low-fi wireframes, clickable prototype, pilot ready to start on Monday.", "groups": [[null, [["w3-flows", "Draw the user flows first (day 1)", "Screen-by-screen paths for: ask a closed question, ask an open question with a bounty, vote, answer, see the result and mark it decided, and the upgrade fake door. Include the branches: tie, no answers yet, bounty with no winner. The journey maps show how people feel; the flows show which screens they need."], ["w3-result", "First Guess result page: sketch 3 versions", "This is the core of the product. Show the public and expert vote, including when they disagree."], ["w3-pick", "Choose one result page version with Kiara", ""], ["w3-ask", "Ask flow", "Question type, category, options or prompt, bounty, publish."], ["w3-vote", "Voting", "It should feel fast and low effort."], ["w3-answer", "Answer submission", "Prompts that push for quality: \"Why this? Who is it for?\""], ["w3-limit", "Upgrade moment (fake door)", "What people see at 100 votes or 5 answers: \"Membership is coming soon. Join the list.\" Nothing is blocked; it measures who would pay."], ["w3-edge", "Main edge states", "No answers yet, a tie, a bounty with no winner."], ["w3-proto", "Link the screens into a clickable prototype", ""], ["w3-pilot", "Set up the pilot for week 4", "A form for asking (Google Form or Typeform), a link for voting, and a result card made from the wireframe. Line up 5–10 real gifting questions."], ["w3-testers", "Book 5 people for the prototype test", ""]]]]}, {"id": "w4", "title": "Week 4 · Test and hand off", "goal": "Prove the loop works, fix what breaks, then package everything visual design needs.", "end": "ready to start visual design, with a brand brief and a moodboard to start from.", "groups": [["Test (days 1–3)", [["w4-pilot", "Run the pilot by hand with real gifting questions", "Does the asker actually find the First Guess useful? Would they act on it?"], ["w4-proto", "Test the prototype with 5 people", "Can they ask, vote and understand the result page without help?"], ["w4-measure", "Record the results", "Task success, whether they understood public vs expert, trust in the winner, whether they'd use it again, and how many tapped the upgrade."], ["w4-report", "Write a one-page test report", ""]]], ["Hand off (days 4–5)", [["w4-revise", "Revise the wireframes based on what we learned", ""], ["w4-midfi", "Bring the core screens to mid-fi", "Result page, ask flow, voting, answering, upgrade moment."], ["w4-copy", "Write the user experience copy for key moments", "Buttons, empty states, upgrade prompt, bounty terms."], ["w4-principles", "List the design principles", "From PRD section 25, for example \"decision, not feed\" and \"trust over hype\"."], ["w4-brief", "Write a short brand brief", "The tone and feeling the visuals should carry, based on research."], ["w4-mood", "Make a Pinterest moodboard for the visual direction", "Pin anything that catches your eye from week 1, but sort it now. Match it to the brand brief and what research showed about how people feel when deciding. This is where visual design (Phase 2) starts."]]]]}];
+const Q = [
+  ["Project and scope", [
+    ["Is there a deadline for the MVP build?", "Ask; Phase 1 runs 4 weeks before visual design"],
+    ["Is gifting the only launch category, or are there others?", "Gifting only for the pilot"],
+    ["Mobile web, desktop web or both?", "Mobile-first web"],
+    ["Who runs the concierge pilot, Rae or Kiara?", "Together; Rae designs it, Kiara recruits"],
+    ["Who builds it, and with what tools?", "No-code plus Supabase, per the PRD"],
+    ["Budget and time for interviews and incentives?", "6 interviews, small gift cards"]]],
+  ["Questions and results", [
+    ["When does a question close: at a time limit, at the vote or answer limit, or when the asker closes it?", "Time limit (e.g. 24–48h) or limit reached, whichever comes first"],
+    ["When is the First Guess shown: live as votes arrive, or only at the end?", "Hidden until you've voted, final at close"],
+    ["Can voters see results before they vote?", "No, to avoid bias"],
+    ["What happens if there's a tie?", "Show both and let the asker decide"],
+    ["Can askers add photos or links to options?", "Yes, since visual decisions are core"]]],
+  ["Voting", [
+    ["Are votes anonymous?", "Anonymous to the public, visible to admins"],
+    ["Can people change their vote?", "Yes, until the question closes"],
+    ["Can voters add a reason?", "Optional short comment"],
+    ["Is every vote equal, with no reputation weighting?", "Equal in MVP"]]],
+  ["Expert", [
+    ["How does someone become an expert in MVP?", "Self-selected at sign-up"],
+    ["Can they change their category?", "Yes, with a cooldown (e.g. monthly)"],
+    ["How many expert votes before the Expert Vote is shown?", "Minimum 5, otherwise hidden"]]],
+  ["Bounty", [
+    ["Is the bounty in the MVP or the pilot?", "Pilot: skip or fake it by hand; MVP: yes"],
+    ["Minimum bounty amount?", "e.g. $10"],
+    ["What if no answer is good enough?", "Refund the asker, minus fees"],
+    ["Can the asker cancel after publishing?", "Only before the first answer"]]],
+  ["Language", [
+    ["Do “First Guesser” and “Curator” appear in the UI, or are they internal names only?", "Internal only; the UI uses plain verbs (Vote, Answer)"]]],
+  ["Money", [
+    ["How do we test paying before membership exists: a free trial, or everything free plus a fake door?", "Everything free in the MVP; bounty fee is the only revenue. At 100 votes or 5 answers, show “Membership coming soon, join the list” and count the taps (tests H6, H7)"]]]
+];
+const RESEARCH = [
+  "Do people care about the public vs expert split? (H4)",
+  "Is one clear winner more useful than a list of opinions? (H5)",
+  "Does a bounty change the quality of answers? (H3)",
+  "Would people pay for more votes and answers, or for picking the winner? (H6, H7)",
+  "What makes someone trust an expert?"];
+const LATER = [
+  "Answer Rewards: threshold, reward pool, anti-gaming rules",
+  "What “Good Taste” means and how outcomes affect reputation",
+  "Community challenges to a winner",
+  "Paid askers' full discretion and whether they must give a reason",
+  "Brands: disclosure, limits, fake experts",
+  "Price and limits for multiple expert categories"];
+
+const load = k => { try { return JSON.parse(localStorage.getItem(k)) || {}; } catch (e) { return {}; } };
+const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const pad = n => String(n).padStart(2, "0");
+const statusEl = document.getElementById("status"), track = document.getElementById("track"), ptext = document.getElementById("ptext"), progressEl = document.getElementById("progress");
+
+/* ---------- Tabs ---------- */
+const TAB_KEY = "first-guess-tab";
+const tabs = [...document.querySelectorAll(".tab")];
+let current = "summary";
+function show(id) {
+  current = id;
+  tabs.forEach(t => {
+    const on = t.dataset.panel === id;
+    if (on) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
+    document.getElementById(t.dataset.panel).hidden = !on;
+    document.querySelector(`.sub[data-for="${t.dataset.panel}"]`).hidden = !on;
+  });
+  try { localStorage.setItem(TAB_KEY, id); } catch (e) {}
+  if (id === "log") document.querySelectorAll("#log textarea").forEach(grow);
+  updateStatus();
+}
+tabs.forEach(t => t.addEventListener("click", () => { show(t.dataset.panel); window.scrollTo(0, 0); }));
+function buildSubnav() {
+  document.querySelectorAll(".panel").forEach(panel => {
+    const sub = document.querySelector(`.sub[data-for="${panel.id}"]`);
+    if (!sub) return;
+    sub.innerHTML = "";
+    [...panel.querySelectorAll("h2")].forEach((h, i) => {
+      if (!h.id) h.id = panel.id + "-" + (i + 1);
+      const a = document.createElement("a");
+      a.href = "#" + h.id;
+      a.textContent = h.firstChild.textContent.trim();
+      sub.appendChild(a);
+    });
+  });
+}
+
+/* ---------- Phase 1 ---------- */
+const PLAN_KEY = "first-guess-ux-plan-4wk";
+let ticks = load(PLAN_KEY);
+document.getElementById("weeks").innerHTML = PLAN.map(w => `
+  <div data-week id="${w.id}">
+    <h2>${w.title} <span class="count"></span></h2>
+    <p class="goal">${w.goal}</p>
+    ${w.groups.map(([h, items]) => `
+      ${h ? `<h3>${h}</h3>` : ""}
+      <ul class="check">${items.map(([id, t, s]) => `
+        <li><label><input type="checkbox" id="${id}" data-id="${id}"><span><span class="t">${t}</span>${s ? `<small>${s}</small>` : ""}</span></label></li>`).join("")}
+      </ul>`).join("")}
+    <p class="out"><strong>End of week:</strong> ${w.end}</p>
+  </div>`).join("");
+const boxes = [...document.querySelectorAll("#plan input[data-id]")];
+function paintPlan() {
+  boxes.forEach(b => { b.checked = !!ticks[b.dataset.id]; b.closest("li").classList.toggle("is-done", b.checked); });
+  document.querySelectorAll("[data-week]").forEach(sec => {
+    const bs = [...sec.querySelectorAll("input[data-id]")], d = bs.filter(b => b.checked).length, c = sec.querySelector(".count");
+    c.textContent = d + " of " + bs.length + (d === bs.length ? " · done" : "");
+    c.classList.toggle("full", d === bs.length);
+  });
+  updateStatus();
+}
+boxes.forEach(b => b.addEventListener("change", () => { ticks[b.dataset.id] = b.checked; store(PLAN_KEY, ticks); paintPlan(); }));
+
+/* ---------- Decision log ---------- */
+const LOG_KEY = "first-guess-decision-log-v1";
+let S = load(LOG_KEY);
+const items = [];
+let n = 0;
+Q.forEach(([g, qs]) => qs.forEach(([q, d]) => items.push({ id: String(++n), g, q, d })));
+let html = "", lastG = "";
+items.forEach(it => {
+  if (it.g !== lastG) { html += `<h3>${esc(it.g)}</h3>`; lastG = it.g; }
+  html += `<div class="item" id="q${it.id}" data-id="${it.id}">
+    <span class="num">${pad(it.id)}</span>
+    <div><p class="qt">${esc(it.q)}</p><p class="def"><b>Suggested:</b> ${esc(it.d)}</p></div>
+    <span></span>
+    <div>
+      <div class="seg">
+        <button type="button" data-s="decided" aria-pressed="false">Decided</button>
+        <button type="button" data-s="research" aria-pressed="false">Move to research</button>
+        <button type="button" data-s="later" aria-pressed="false">Park for later</button>
+        <button type="button" class="use">Use suggested</button>
+      </div>
+      <div class="fields">
+        <div><label class="f" for="a${it.id}">Answer</label><textarea id="a${it.id}" rows="1" data-k="${it.id}.answer" placeholder="What did you agree?"></textarea></div>
+        <div><label class="f" for="b${it.id}">Decided by</label><input class="txt" id="b${it.id}" data-k="${it.id}.by" placeholder="Kiara"></div>
+      </div>
+    </div>
+  </div>`;
+});
+const qlist = document.getElementById("qlist");
+qlist.innerHTML = html;
+
+const get = k => { const [a, b] = k.split("."); return (S[a] || {})[b]; };
+const setVal = (k, v) => { const [a, b] = k.split("."); (S[a] = S[a] || {})[b] = v; store(LOG_KEY, S); };
+const fields = [...document.querySelectorAll("#log [data-k]")];
+function grow(t) { if (!t.offsetParent) return; t.style.height = "auto"; t.style.height = t.scrollHeight + 2 + "px"; }
+function fillFields() { fields.forEach(el => { el.value = get(el.dataset.k) || ""; }); }
+fields.forEach(el => el.addEventListener("input", () => { setVal(el.dataset.k, el.value); if (el.tagName === "TEXTAREA") grow(el); }));
+
+function paintLog() {
+  items.forEach(it => {
+    const el = document.getElementById("q" + it.id), s = get(it.id + ".status") || "";
+    el.dataset.status = s;
+    el.querySelectorAll(".seg [data-s]").forEach(b => b.setAttribute("aria-pressed", b.dataset.s === s));
+  });
+  const moved = s => items.filter(it => get(it.id + ".status") === s).map(it => `${esc(it.q)} <span class="from">(from ${pad(it.id)})</span>`);
+  document.getElementById("rlist").innerHTML = [...RESEARCH.map(esc), ...moved("research")].map(x => `<li>${x}</li>`).join("");
+  document.getElementById("llist").innerHTML = [...LATER.map(esc), ...moved("later")].map(x => `<li>${x}</li>`).join("");
+  updateStatus();
+}
+qlist.addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  const id = b.closest(".item").dataset.id;
+  if (b.classList.contains("use")) {
+    const t = document.getElementById("a" + id);
+    t.value = items[id - 1].d; setVal(id + ".answer", t.value); grow(t);
+    if (!get(id + ".status")) setVal(id + ".status", "decided");
+  } else {
+    setVal(id + ".status", get(id + ".status") === b.dataset.s ? "" : b.dataset.s);
+  }
+  paintLog();
+});
+
+function markdown() {
+  const m = S.meta || {}, L = [];
+  L.push("# First Guess decision log", "");
+  L.push(`- Date: ${m.date || ""}`, `- Who was there: ${m.who || ""}`, `- Next check-in: ${m.next || ""}`, "");
+  const label = { decided: "Decided", research: "Research", later: "Later", "": "Open" };
+  const c = s => String(s || "").replace(/\|/g, "\\|").replace(/\n/g, " ");
+  let g = "";
+  L.push("## A. Decide in the kickoff");
+  items.forEach(it => {
+    if (it.g !== g) { L.push("", `### ${it.g}`, "", "| # | Question | Answer | Status | By |", "|---|---|---|---|---|"); g = it.g; }
+    L.push(`| ${it.id} | ${c(it.q)} | ${c(get(it.id + ".answer"))} | ${label[get(it.id + ".status") || ""]} | ${c(get(it.id + ".by"))} |`);
+  });
+  const moved = s => items.filter(it => get(it.id + ".status") === s).map(it => `${it.q} (from ${it.id})`);
+  L.push("", "## B. Test in research", "", ...[...RESEARCH, ...moved("research")].map(x => "- " + x));
+  L.push("", "## C. Park until later", "", ...[...LATER, ...moved("later")].map(x => "- " + x), "");
+  return L.join("\n");
+}
+const toast = t => { const el = document.getElementById("toast"); el.textContent = t; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 2400); };
+document.getElementById("cp").addEventListener("click", () => {
+  navigator.clipboard.writeText(markdown()).then(() => toast("Copied"), () => toast("Copy didn't work. Use Download .md instead."));
+});
+document.getElementById("dl").addEventListener("click", () => {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([markdown()], { type: "text/markdown" }));
+  a.download = "first guess decision log.md"; a.click();
+  toast("Downloaded");
+});
+document.getElementById("reset").addEventListener("click", () => {
+  if (!confirm("Clear every answer in the decision log?")) return;
+  S = {}; store(LOG_KEY, S); fillFields(); document.querySelectorAll("#log textarea").forEach(grow); paintLog(); toast("Cleared");
+});
+
+/* ---------- Header status ---------- */
+function updateStatus() {
+  if (current === "plan") {
+    const d = boxes.filter(b => b.checked).length;
+    statusEl.textContent = "4 weeks";
+    ptext.textContent = `${d} of ${boxes.length} tasks done`; progressEl.hidden = false;
+    track.style.width = (d / boxes.length * 100) + "%";
+  } else if (current === "log") {
+    const d = items.filter(it => get(it.id + ".status")).length;
+    statusEl.textContent = "Kickoff with Kiara";
+    ptext.textContent = `${d} of ${items.length} questions sorted`; progressEl.hidden = false;
+    track.style.width = (d / items.length * 100) + "%";
+  } else {
+    statusEl.textContent = "PRD v0.1";
+    progressEl.hidden = true;
+  }
+}
+
+buildSubnav();
+fillFields();
+paintPlan();
+paintLog();
+let start = "summary";
+try { start = localStorage.getItem(TAB_KEY) || "summary"; } catch (e) {}
+show(tabs.some(t => t.dataset.panel === start) ? start : "summary");
+</script>
+</body>
+</html>
