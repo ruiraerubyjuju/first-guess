@@ -24,6 +24,15 @@
   .side { position: sticky; top: 0; height: 100vh; overflow-y: auto; border-right: 1px solid var(--line); padding: 28px 20px 24px; display: flex; flex-direction: column; gap: 22px; }
   .brand { font-size: 17px; font-weight: 800; letter-spacing: -.01em; }
   .brand small { display: block; font-size: 13px; font-weight: 500; color: var(--ink2); margin-top: 2px; }
+  .meet { background: var(--coral); color: var(--ink); border-radius: 10px; padding: 14px 16px 15px; }
+  .meet-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .meet b { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+  .meet-edit { font-size: 13px; font-weight: 600; color: var(--ink); text-underline-offset: 2px; }
+  .meet-edit:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; border-radius: 2px; }
+  .meet.wait time, .meet.wait .when { visibility: hidden; }
+  .meet time { display: block; font-size: 26px; font-weight: 800; letter-spacing: -.01em; line-height: 1.15; margin-top: 4px; }
+  .meet .when { display: block; font-size: 14px; font-weight: 600; margin-top: 2px; }
+  .meet .when:empty { display: none; }
   .tabs { display: flex; flex-direction: column; gap: 2px; }
   .tab { font: inherit; font-size: 15px; font-weight: 600; color: var(--ink2); background: none; border: 0; border-radius: 6px; padding: 7px 10px; text-align: left; cursor: pointer; border-left: 2px solid transparent; }
   .tab:hover { color: var(--ink); background: rgba(21,21,26,.04); }
@@ -340,11 +349,17 @@
   }
 
   @media (max-width: 860px) {
-    html { scroll-padding-top: 110px; }
+    html { scroll-padding-top: 150px; }
     .layout { display: block; }
     .side { position: sticky; height: auto; z-index: 5; background: rgba(251,250,247,.96); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-right: 0; border-bottom: 1px solid var(--line); padding: 12px 16px 0; gap: 6px; }
     .brand { display: flex; justify-content: space-between; align-items: baseline; font-size: 15px; }
     .brand small { margin: 0; }
+    .meet { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; padding: 7px 12px; border-radius: 8px; margin-top: 4px; }
+    .meet-top { display: contents; }
+    .meet b { font-size: 11px; }
+    .meet-edit { order: 1; margin-left: auto; }
+    .meet time { font-size: 15px; margin: 0; }
+    .meet .when { font-size: 13px; margin: 0; }
     .tabs { flex-direction: row; gap: 18px; overflow-x: auto; scrollbar-width: none; }
     .tab { padding: 6px 0 10px; border-left: 0; border-bottom: 2px solid transparent; border-radius: 0; white-space: nowrap; }
     .tab:hover { background: none; }
@@ -368,6 +383,10 @@
 <div class="layout">
 <aside class="side">
   <div class="brand">First Guess<small id="status"></small></div>
+  <div class="meet" id="meet">
+    <div class="meet-top"><b>Next meeting</b><a class="meet-edit" id="meet-edit" href="https://github.com/ruiraerubyjuju/first-guess/edit/main/meeting.txt" target="_blank" rel="noopener" hidden>Change</a></div>
+    <time datetime="2026-10-13">Tue 13 Oct</time><span class="when" id="meet-when"></span>
+  </div>
   <nav class="tabs" aria-label="Pages">
     <button type="button" class="tab" data-panel="summary">PRD summary</button>
     <div class="sub" data-for="summary"></div>
@@ -678,7 +697,6 @@
   <section class="panel" id="plan" hidden>
     <h1>Phase 1</h1>
     <p class="lead">Three weeks to go from the PRD to wireframes that are ready for visual design, to fit the MVP deadline. The main job is to prove that ask → answer → vote → First Guess works before anything gets styled.</p>
-    <p class="out"><strong>Next meeting:</strong> Tuesday 13 October 2026</p>
     <p class="note">Tick a task when it's done. Ticks are saved in this browser.</p>
     <div class="tablewrap"><table>
       <tr><th>Week</th><th>Focus</th><th>You end the week with</th></tr>
@@ -864,8 +882,8 @@ boxes.forEach(b => b.addEventListener("change", () => { ticks[b.dataset.id] = b.
 /* ---------- Decision log ---------- */
 // Answers agreed at the kickoff (29 Sep 2026), plus question 25 (DMs) added on 30 Sep. Every browser starts from these; edits only save locally.
 // When they change, rename LOG_KEY so every browser picks up the new answers, and update the lead in #log.
-const KICKOFF = {"meta": {"date": "2026-09-29", "who": "Rae, Kiara", "next": "2026-10-13"}, "1": {"answer": "4 weeks for now", "status": "decided", "by": "Rae and Kiara"}, "2": {"answer": "", "status": "research", "by": "Rae and Kiara"}, "3": {"answer": "Responsive design, but mobile first", "status": "", "by": "Rae and Kiara"}, "4": {"answer": "Will be scripted by Kiara", "status": "decided", "by": "Rae and Kiara"}, "5": {"answer": "Figma and AI coding tools", "status": "decided", "by": "Rae and Kiara"}, "6": {"answer": "No budget for now", "status": "decided", "by": "Kiara"}, "7": {"answer": "Default limit, with limit options", "status": "research", "by": "Rae and Kiara"}, "8": {"answer": "Not sure for now", "status": "research", "by": "Rae"}, "9": {"answer": "No", "status": "decided", "by": "Rae and Kiara"}, "10": {"answer": "", "status": "research", "by": "Rae and Kiara"}, "11": {"answer": "Yes", "status": "decided", "by": "Rae and Kiara"}, "12": {"answer": "User can choose anonymous or public", "status": "decided", "by": "Rae"}, "13": {"answer": "Can change, but paid feature (maybe)", "status": "decided", "by": "Kiara"}, "14": {"answer": "Yes", "status": "decided", "by": "Rae and Kiara"}, "15": {"answer": "Yes for now, but might change later", "status": "decided", "by": "Kiara"}, "16": {"answer": "Users can choose one expert category at registration (only changeable once a month) but they can also pay to identify themselves as experts of more than one category or change it more frequently", "status": "research", "by": "Rae and Kiara"}, "17": {"answer": "Yes", "status": "decided", "by": "Kiara"}, "18": {"answer": "3, 5, 10", "status": "research", "by": "Rae and Kiara"}, "19": {"answer": "Pilot: skip or fake it by hand; MVP: yes", "status": "decided", "by": "Kiara"}, "20": {"answer": "$1", "status": "research", "by": "Kiara"}, "21": {"answer": "Refund the asker, minus fees", "status": "research", "by": "Kiara"}, "22": {"answer": "Yes, but no refunds if there is a bounty", "status": "decided", "by": "Rae and Kiara"}, "23": {"answer": "Internal only; the UI uses plain verbs (Vote, Answer)", "status": "decided", "by": "Kiara"}, "24": {"answer": "Everything free in the MVP; bounty fee is the only revenue. At 100 votes or 5 answers, show “Membership coming soon, join the list” and count the taps (tests H6, H7)", "status": "later", "by": "Kiara"}, "25": {"answer": "Not in the MVP. Ask about it in the interviews first", "status": "later", "by": "Rae"}};
-const LOG_KEY = "first-guess-decision-log-kickoff-3";
+const KICKOFF = {"meta": {"date": "2026-09-29", "who": "Rae, Kiara", "next": ""}, "1": {"answer": "4 weeks for now", "status": "decided", "by": "Rae and Kiara"}, "2": {"answer": "", "status": "research", "by": "Rae and Kiara"}, "3": {"answer": "Responsive design, but mobile first", "status": "", "by": "Rae and Kiara"}, "4": {"answer": "Will be scripted by Kiara", "status": "decided", "by": "Rae and Kiara"}, "5": {"answer": "Figma and AI coding tools", "status": "decided", "by": "Rae and Kiara"}, "6": {"answer": "No budget for now", "status": "decided", "by": "Kiara"}, "7": {"answer": "Default limit, with limit options", "status": "research", "by": "Rae and Kiara"}, "8": {"answer": "Not sure for now", "status": "research", "by": "Rae"}, "9": {"answer": "No", "status": "decided", "by": "Rae and Kiara"}, "10": {"answer": "", "status": "research", "by": "Rae and Kiara"}, "11": {"answer": "Yes", "status": "decided", "by": "Rae and Kiara"}, "12": {"answer": "User can choose anonymous or public", "status": "decided", "by": "Rae"}, "13": {"answer": "Can change, but paid feature (maybe)", "status": "decided", "by": "Kiara"}, "14": {"answer": "Yes", "status": "decided", "by": "Rae and Kiara"}, "15": {"answer": "Yes for now, but might change later", "status": "decided", "by": "Kiara"}, "16": {"answer": "Users can choose one expert category at registration (only changeable once a month) but they can also pay to identify themselves as experts of more than one category or change it more frequently", "status": "research", "by": "Rae and Kiara"}, "17": {"answer": "Yes", "status": "decided", "by": "Kiara"}, "18": {"answer": "3, 5, 10", "status": "research", "by": "Rae and Kiara"}, "19": {"answer": "Pilot: skip or fake it by hand; MVP: yes", "status": "decided", "by": "Kiara"}, "20": {"answer": "$1", "status": "research", "by": "Kiara"}, "21": {"answer": "Refund the asker, minus fees", "status": "research", "by": "Kiara"}, "22": {"answer": "Yes, but no refunds if there is a bounty", "status": "decided", "by": "Rae and Kiara"}, "23": {"answer": "Internal only; the UI uses plain verbs (Vote, Answer)", "status": "decided", "by": "Kiara"}, "24": {"answer": "Everything free in the MVP; bounty fee is the only revenue. At 100 votes or 5 answers, show “Membership coming soon, join the list” and count the taps (tests H6, H7)", "status": "later", "by": "Kiara"}, "25": {"answer": "Not in the MVP. Ask about it in the interviews first", "status": "later", "by": "Rae"}};
+const LOG_KEY = "first-guess-decision-log-kickoff-4";
 const fresh = () => JSON.parse(JSON.stringify(KICKOFF));
 let S = (() => { try { return localStorage.getItem(LOG_KEY) === null ? fresh() : load(LOG_KEY); } catch (e) { return fresh(); } })();
 const items = [];
@@ -958,6 +976,53 @@ document.getElementById("reset").addEventListener("click", () => {
   S = fresh(); try { localStorage.removeItem(LOG_KEY); } catch (e) {}
   fillFields(); document.querySelectorAll("#log textarea").forEach(grow); paintLog(); toast("Back to the kickoff answers");
 });
+
+/* ---------- Next meeting ---------- */
+// The date lives in meeting.txt so Rae can change it on GitHub; the date in the HTML is the fallback (e.g. opened as a local file).
+// Rae's browser shows the Change link after opening the site once with ?admin (?admin=off hides it again).
+const MON = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, mai: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, okt: 10, nov: 11, dec: 12, des: 12 };
+const WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], MN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function parseMeeting(txt) {
+  const s = txt.trim(), mon = w => MON[w.slice(0, 3).toLowerCase()];
+  let y, m, d, r;
+  if ((r = s.match(/(\d{4})-(\d{1,2})-(\d{1,2})/))) [y, m, d] = [+r[1], +r[2], +r[3]];
+  else if ((r = s.match(/(\d{1,2})[./](\d{1,2})[./](\d{4})/))) [d, m, y] = [+r[1], +r[2], +r[3]];
+  else if ((r = s.match(/(\d{1,2})\.?\s+([a-zæøå]{3,})\.?,?(?:\s+(\d{4}))?/i)) && mon(r[2])) [d, m, y] = [+r[1], mon(r[2]), r[3] && +r[3]];
+  else if ((r = s.match(/([a-zæøå]{3,})\.?\s+(\d{1,2})(?:,?\s+(\d{4}))?/i)) && mon(r[1])) [m, d, y] = [mon(r[1]), +r[2], r[3] && +r[3]];
+  else return null;
+  const now = new Date();
+  if (!y) { y = now.getFullYear(); if (new Date(y, m - 1, d) < new Date(now - 30 * 864e5)) y++; }
+  const date = new Date(y, m - 1, d);
+  if (date.getMonth() !== m - 1 || date.getDate() !== d) return null;
+  const t = s.replace(r[0], "").match(/(\d{1,2})[:.](\d{2})/);
+  return { date, time: t ? `${t[1].padStart(2, "0")}:${t[2]}` : "" };
+}
+function showMeeting(txt) {
+  const el = document.querySelector(".meet time"), when = document.getElementById("meet-when"), mt = parseMeeting(txt);
+  if (!mt) { el.textContent = txt.trim(); el.removeAttribute("datetime"); when.textContent = ""; return; }
+  const { date, time } = mt, now = new Date();
+  el.setAttribute("datetime", `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`);
+  el.textContent = `${WD[date.getDay()]} ${date.getDate()} ${MN[date.getMonth()]}${date.getFullYear() !== now.getFullYear() ? " " + date.getFullYear() : ""}`;
+  const days = Math.round((date - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 864e5);
+  const left = days === 0 ? "Today" : days === 1 ? "Tomorrow" : days > 1 ? `In ${days} days` : "";
+  when.textContent = [time, left].filter(Boolean).join(" · ");
+}
+(() => {
+  const meet = document.getElementById("meet"), fallback = meet.querySelector("time").getAttribute("datetime");
+  if (location.protocol === "file:") showMeeting(fallback);
+  else {
+    meet.classList.add("wait");
+    fetch("meeting.txt", { cache: "no-store" })
+      .then(r => r.ok ? r.text() : Promise.reject())
+      .then(t => showMeeting(t.trim() ? t : fallback), () => showMeeting(fallback))
+      .finally(() => meet.classList.remove("wait"));
+  }
+  const q = new URLSearchParams(location.search);
+  try {
+    if (q.has("admin")) q.get("admin") === "off" ? localStorage.removeItem("first-guess-admin") : localStorage.setItem("first-guess-admin", "1");
+    document.getElementById("meet-edit").hidden = localStorage.getItem("first-guess-admin") !== "1";
+  } catch (e) {}
+})();
 
 /* ---------- Header status ---------- */
 function updateStatus() {
