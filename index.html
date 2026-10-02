@@ -119,6 +119,18 @@
   .btn:focus-visible { outline: 2px solid var(--coral); outline-offset: 2px; }
   .toast { font-size: 14px; font-weight: 600; color: var(--green); }
 
+  /* Interview kit */
+  ol.kit { list-style: none; padding: 0; margin-top: 16px; border-top: 1px solid var(--line); counter-reset: kq; }
+  ol.kit > li { counter-increment: kq; display: grid; grid-template-columns: 34px 1fr; gap: 4px 10px; padding: 16px 0 18px; border-bottom: 1px solid var(--line); }
+  ol.kit > li::before { content: counter(kq, decimal-leading-zero); font-weight: 700; color: var(--ink2); font-variant-numeric: tabular-nums; padding-top: 1px; }
+  .kq { font-weight: 600; margin: 0; }
+  ul.opts { list-style: none; padding: 0; margin-top: 8px; }
+  ul.opts li { position: relative; padding-left: 18px; margin-top: 3px; }
+  ul.opts li::before { content: ""; position: absolute; left: 2px; top: .6em; width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid var(--ink2); }
+  ul.opts span { color: var(--ink2); }
+  .kn { margin-top: 8px; font-size: 15px; color: var(--ink2); }
+  .kn b { color: var(--ink); font-weight: 600; }
+
 
   /* PRD infographics */
   .board { background: var(--field); border: 1px solid var(--line); border-radius: 14px; padding: 26px; margin-top: 16px; }
@@ -373,7 +385,7 @@
   @media (max-width: 600px) {
     h1 { font-size: 32px; } h2 { font-size: 23px; margin-top: 48px; }
     .meeting, .fields { grid-template-columns: 1fr; }
-    .item { grid-template-columns: 28px 1fr; }
+    .item, ol.kit > li { grid-template-columns: 28px 1fr; }
   }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .track i { transition: none; } }
 </style>
@@ -394,6 +406,8 @@
     <div class="sub" data-for="plan"></div>
     <button type="button" class="tab nested" data-panel="log">Decision log</button>
     <div class="sub" data-for="log"></div>
+    <button type="button" class="tab nested" data-panel="kit">Interview kit</button>
+    <div class="sub" data-for="kit"></div>
   </nav>
   <div class="progress" id="progress"><span id="ptext"></span><div class="track"><i id="track"></i></div></div>
 </aside>
@@ -758,7 +772,97 @@
     </div>
   </section>
 
-  <footer>First Guess · PRD v0.1 · updated 30 Sep 2026</footer>
+  <!-- INTERVIEW KIT: Part 1 for now -->
+  <section class="panel" id="kit" hidden>
+    <h1>Interview kit</h1>
+    <p class="lead">Part 1 of the interview kit for Phase 1 research: the screener for recruiting interviewees. The other parts will be added later.</p>
+
+    <h2>Part 1: Screener</h2>
+    <p class="goal">Use this to recruit and sort people into Script A or Script B. Keep it under 3 minutes.</p>
+    <ol class="kit">
+      <li><div>
+        <p class="kq">In the past 6 months, in which of these areas did you face a decision that felt hard or high-stakes? (select all that apply)</p>
+        <p class="kn">The examples are only there to help; any decision in that area counts.</p>
+        <ul class="opts">
+          <li><b>Technology</b> <span>(e.g. a phone or laptop, headphones, which app or tool to use)</span></li>
+          <li><b>Home and interior</b> <span>(e.g. furniture, paint colours, how to lay out a room)</span></li>
+          <li><b>Gifts</b> <span>(e.g. a birthday present, a wedding gift, something for a partner)</span></li>
+          <li><b>Travel</b> <span>(e.g. where to go, where to stay, what to pack)</span></li>
+          <li><b>Fashion and beauty</b> <span>(e.g. what to wear to an event, a new haircut, makeup or skincare)</span></li>
+          <li><b>Sport and fitness</b> <span>(e.g. running shoes, which gym or class, a training plan)</span></li>
+          <li><b>Anime, gaming and fandom</b> <span>(e.g. what to watch or play next, which figure or merch to buy, a cosplay)</span></li>
+          <li><b>Food and drink</b> <span>(e.g. a restaurant for a special occasion, what to cook for guests, a wine to bring)</span></li>
+          <li><b>Big purchases</b> <span>(e.g. a car, a bike, a big appliance)</span></li>
+          <li><b>Career and work</b> <span>(e.g. a job offer, your CV or portfolio, a course to take)</span></li>
+          <li><b>Science, research and academia</b> <span>(e.g. a study programme, a research topic, where to publish, choosing a supervisor)</span></li>
+          <li><b>Something else</b> <span>(please say what)</span></li>
+          <li><b>None of these</b></li>
+        </ul>
+        <p class="kn"><b>Qualify:</b> at least one area selected.</p>
+        <p class="kn"><b>Form tip:</b> shuffle the order of the areas if your form tool allows, so no area always comes first. Note which areas come up most; it's an early read on where people most want help.</p>
+      </div></li>
+      <li><div>
+        <p class="kq">Think of the most recent one. What was the decision, in a few words? And how much did it matter to you to get it right? (1 = not at all, 5 = a lot)</p>
+        <p class="kn">Prefer 3 or higher. The short description shows you the specific decisions inside each area.</p>
+      </div></li>
+      <li><div>
+        <p class="kq">Before deciding, who did you ask for an opinion? (select all)</p>
+        <ul class="opts">
+          <li>Friend or partner</li>
+          <li>Family</li>
+          <li>Group chat</li>
+          <li>Online community <span>(e.g. Reddit, Instagram)</span></li>
+          <li>AI tool</li>
+          <li>A professional <span>(e.g. a salesperson, a coach or advisor, a stylist)</span></li>
+          <li>No one</li>
+        </ul>
+      </div></li>
+      <li><div>
+        <p class="kq">Have you ever given others advice on decisions in any of these areas?</p>
+        <ul class="opts">
+          <li>Friends only</li>
+          <li>Strangers online</li>
+          <li>Professionally or for pay</li>
+          <li>Never</li>
+        </ul>
+      </div></li>
+      <li><div>
+        <p class="kq">Which best describes you?</p>
+        <ul class="opts">
+          <li><b>Professional:</b> I work or have worked in one of the Q1 areas, and people come to me for advice on it <span>(e.g. a salesperson, a designer, a coach, a researcher or teacher)</span></li>
+          <li><b>Serious hobbyist:</b> I'm deep into one of the Q1 areas and have a following or a portfolio <span>(e.g. a tech, anime or interiors account)</span></li>
+          <li><b>Neither</b></li>
+        </ul>
+        <p class="kn"><b>Follow-up if professional or hobbyist:</b> which of the Q1 areas? (select all that apply) Technology / Home and interior / Gifts / Travel / Fashion and beauty / Sport and fitness / Anime, gaming and fandom / Food and drink / Big purchases / Career and work / Science, research and academia / Something else</p>
+      </div></li>
+      <li><div>
+        <p class="kq">If you're a professional or hobbyist: briefly describe what you do, and roughly how many people you advise in a month.</p>
+      </div></li>
+      <li><div>
+        <p class="kq">Think about the decision you described in Q2. If you could ask a group of people for help with it, which would you most likely do? Briefly, why?</p>
+        <ul class="opts">
+          <li>Post the options you're choosing between <span>(e.g. links, screenshots or photos of the items)</span></li>
+          <li>Post photos of the options on you or in your space <span>(e.g. you wearing each outfit, each sofa in your living room)</span></li>
+          <li>Describe your situation and ask people to suggest ideas</li>
+          <li>I wouldn't ask a group of people for this</li>
+        </ul>
+        <p class="kn"><b>Do not screen out on this.</b> Use it to balance your sample across the three ways of asking.</p>
+      </div></li>
+      <li><div>
+        <p class="kq">Name, email or phone, and best times to talk.</p>
+      </div></li>
+    </ol>
+
+    <h2>Routing</h2>
+    <ul class="plain">
+      <li><b>Script A:</b> Q5 = professional or serious hobbyist in any area.</li>
+      <li><b>Script B:</b> everyone else who qualifies on Q1 and Q2, especially anyone who answered Q4 with strangers online or friends.</li>
+      <li><b>Suggested starting mix:</b> 5 to 6 Script A, 8 to 10 Script B. Adjust once you see who responds. Recruit across the Q1 areas, so you can compare them.</li>
+      <li>Aim for a spread on Q7 so all three ways of asking are represented, including people who would not post photos of themselves or their home.</li>
+    </ul>
+  </section>
+
+  <footer>First Guess · PRD v0.1 · updated 2 Oct 2026</footer>
 </main>
 </div>
 
@@ -833,6 +937,8 @@ function show(id) {
     document.getElementById(t.dataset.panel).hidden = !on;
     document.querySelector(`.sub[data-for="${t.dataset.panel}"]`).hidden = !on;
   });
+  const nav = document.querySelector(".tabs"), act = tabs.find(t => t.dataset.panel === id);
+  if (act && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = Math.max(0, act.offsetLeft - nav.offsetLeft - 16);
   try { localStorage.setItem(TAB_KEY, id); } catch (e) {}
   if (id === "log") document.querySelectorAll("#log textarea").forEach(grow);
   updateStatus();
@@ -1036,6 +1142,9 @@ function updateStatus() {
     statusEl.textContent = "Kickoff with Kiara";
     ptext.textContent = `${d} of ${items.length} questions sorted`; progressEl.hidden = false;
     track.style.width = (d / items.length * 100) + "%";
+  } else if (current === "kit") {
+    statusEl.textContent = "Part 1 · Screener";
+    progressEl.hidden = true;
   } else {
     statusEl.textContent = "PRD v0.1";
     progressEl.hidden = true;
