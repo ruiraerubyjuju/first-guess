@@ -1241,6 +1241,7 @@ document.getElementById("reset").addEventListener("click", () => {
 
 /* ---------- Next meeting ---------- */
 // The date lives in meeting.txt so Rae can change it on GitHub; the date in the HTML is the fallback (e.g. opened as a local file).
+// A time in meeting.txt is Oslo time; the card shows it in the viewer's own time zone (the day can shift with it).
 // Rae's browser shows the Change link after opening the site once with ?admin (?admin=off hides it again).
 const MON = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, mai: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, okt: 10, nov: 11, dec: 12, des: 12 };
 const WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], MN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -1259,10 +1260,23 @@ function parseMeeting(txt) {
   const t = s.replace(r[0], "").match(/(\d{1,2})[:.](\d{2})/);
   return { date, time: t ? `${t[1].padStart(2, "0")}:${t[2]}` : "" };
 }
+function osloTime(date, time) {
+  const [h, mi] = time.split(":").map(Number), guess = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), h, mi);
+  const p = {};
+  new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Oslo", hourCycle: "h23", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", minute: "numeric" })
+    .formatToParts(guess).forEach(x => p[x.type] = +x.value);
+  return new Date(2 * guess - Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute));
+}
 function showMeeting(txt) {
   const el = document.querySelector(".meet time"), when = document.getElementById("meet-when"), mt = parseMeeting(txt);
   if (!mt) { el.textContent = txt.trim(); el.removeAttribute("datetime"); when.textContent = ""; return; }
-  const { date, time } = mt, now = new Date();
+  let { date, time } = mt;
+  const now = new Date();
+  if (time) {
+    const at = osloTime(date, time);
+    date = new Date(at.getFullYear(), at.getMonth(), at.getDate());
+    time = `${pad(at.getHours())}:${pad(at.getMinutes())}`;
+  }
   el.setAttribute("datetime", `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`);
   el.textContent = `${WD[date.getDay()]} ${date.getDate()} ${MN[date.getMonth()]}${date.getFullYear() !== now.getFullYear() ? " " + date.getFullYear() : ""}`;
   const days = Math.round((date - new Date(now.getFullYear(), now.getMonth(), now.getDate())) / 864e5);
